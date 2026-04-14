@@ -1,6 +1,6 @@
 {
-    "name": "etutor-task-app-binary-search",
-    "version": "1.0.3",
+    "name": "etutor-task-app-hierarchical-clustering",
+    "version": "1.0.0",
     "private": true,
     "scripts": {
         "commit": "cz",

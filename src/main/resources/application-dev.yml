@@ -7,8 +7,8 @@ logging:
 # Data
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5434/etutor_binary_search
-    username: etutor_binary_search
+    url: jdbc:postgresql://localhost:5434/etutor_hierarchical_clustering
+    username: etutor_hierarchical_clustering
     password: secret
   jpa:
     show-sql: true

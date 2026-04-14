@@ -11,11 +11,11 @@
     </parent>
 
     <groupId>at.jku.dke.etutor</groupId>
-    <artifactId>task-app-binary-search</artifactId>
-    <version>1.0.3</version>
+    <artifactId>task-app-hierarchical-clustering</artifactId>
+    <version>1.0.0</version>
 
-    <name>eTutor Task-App: Binary Search</name>
-    <description>eTutor Task-App for task type "binary-search"</description>
+    <name>eTutor Task-App: Hierarchical Clustering</name>
+    <description>eTutor Task-App for task type "hierarchical-clustering"</description>
     <packaging>jar</packaging>
 
     <properties>
