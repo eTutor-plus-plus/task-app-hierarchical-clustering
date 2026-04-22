@@ -2,8 +2,8 @@ package at.jku.dke.task_app.hierarchical_clustering.services;
 
 import at.jku.dke.etutor.task_app.dto.SubmissionMode;
 import at.jku.dke.etutor.task_app.dto.SubmitSubmissionDto;
-import at.jku.dke.task_app.hierarchical_clustering.data.entities.BinarySearchSubmission;
-import at.jku.dke.task_app.hierarchical_clustering.dto.BinarySearchSubmissionDto;
+import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringSubmission;
+import at.jku.dke.task_app.hierarchical_clustering.dto.HierarchicalClusteringSubmissionDto;
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.EvaluationService;
 import org.junit.jupiter.api.Test;
 
@@ -16,11 +16,11 @@ class BinarySearchSubmissionServiceTest {
     @Test
     void createSubmissionEntity() {
         // Arrange
-        SubmitSubmissionDto<BinarySearchSubmissionDto> dto = new SubmitSubmissionDto<>("test-user", "test-quiz", 3L, "de", SubmissionMode.SUBMIT, 2, new BinarySearchSubmissionDto("33"));
-        BinarySearchSubmissionService service = new BinarySearchSubmissionService(null, null, null);
+        SubmitSubmissionDto<HierarchicalClusteringSubmissionDto> dto = new SubmitSubmissionDto<>("test-user", "test-quiz", 3L, "de", SubmissionMode.SUBMIT, 2, new HierarchicalClusteringSubmissionDto("33"));
+        HierarchicalClusteringSubmissionService service = new HierarchicalClusteringSubmissionService(null, null, null);
 
         // Act
-        BinarySearchSubmission submission = service.createSubmissionEntity(dto);
+        HierarchicalClusteringSubmission submission = service.createSubmissionEntity(dto);
 
         // Assert
         assertEquals(dto.submission().input(), submission.getSubmission());
@@ -29,11 +29,11 @@ class BinarySearchSubmissionServiceTest {
     @Test
     void mapSubmissionToSubmissionData() {
         // Arrange
-        BinarySearchSubmission submission = new BinarySearchSubmission("33");
-        BinarySearchSubmissionService service = new BinarySearchSubmissionService(null, null, null);
+        HierarchicalClusteringSubmission submission = new HierarchicalClusteringSubmission("33");
+        HierarchicalClusteringSubmissionService service = new HierarchicalClusteringSubmissionService(null, null, null);
 
         // Act
-        BinarySearchSubmissionDto dto = service.mapSubmissionToSubmissionData(submission);
+        HierarchicalClusteringSubmissionDto dto = service.mapSubmissionToSubmissionData(submission);
 
         // Assert
         assertEquals(submission.getSubmission(), dto.input());
@@ -43,8 +43,8 @@ class BinarySearchSubmissionServiceTest {
     void evaluate() {
         // Arrange
         var evalService = mock(EvaluationService.class);
-        SubmitSubmissionDto<BinarySearchSubmissionDto> dto = new SubmitSubmissionDto<>("test-user", "test-quiz", 3L, "de", SubmissionMode.SUBMIT, 2, new BinarySearchSubmissionDto("33"));
-        BinarySearchSubmissionService service = new BinarySearchSubmissionService(null, null, evalService);
+        SubmitSubmissionDto<HierarchicalClusteringSubmissionDto> dto = new SubmitSubmissionDto<>("test-user", "test-quiz", 3L, "de", SubmissionMode.SUBMIT, 2, new HierarchicalClusteringSubmissionDto("33"));
+        HierarchicalClusteringSubmissionService service = new HierarchicalClusteringSubmissionService(null, null, evalService);
 
         // Act
         var result = service.evaluate(dto);

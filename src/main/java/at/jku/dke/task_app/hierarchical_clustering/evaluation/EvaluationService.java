@@ -3,8 +3,8 @@ package at.jku.dke.task_app.hierarchical_clustering.evaluation;
 import at.jku.dke.etutor.task_app.dto.CriterionDto;
 import at.jku.dke.etutor.task_app.dto.GradingDto;
 import at.jku.dke.etutor.task_app.dto.SubmitSubmissionDto;
-import at.jku.dke.task_app.hierarchical_clustering.data.repositories.BinarySearchTaskRepository;
-import at.jku.dke.task_app.hierarchical_clustering.dto.BinarySearchSubmissionDto;
+import at.jku.dke.task_app.hierarchical_clustering.data.repositories.HierarchicalClusteringTaskRepository;
+import at.jku.dke.task_app.hierarchical_clustering.dto.HierarchicalClusteringSubmissionDto;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ import java.util.Locale;
 public class EvaluationService {
     private static final Logger LOG = LoggerFactory.getLogger(EvaluationService.class);
 
-    private final BinarySearchTaskRepository taskRepository;
+    private final HierarchicalClusteringTaskRepository taskRepository;
     private final MessageSource messageSource;
 
     /**
@@ -33,7 +33,7 @@ public class EvaluationService {
      * @param taskRepository The task repository.
      * @param messageSource  The message source.
      */
-    public EvaluationService(BinarySearchTaskRepository taskRepository, MessageSource messageSource) {
+    public EvaluationService(HierarchicalClusteringTaskRepository taskRepository, MessageSource messageSource) {
         this.taskRepository = taskRepository;
         this.messageSource = messageSource;
     }
@@ -45,7 +45,7 @@ public class EvaluationService {
      * @return The evaluation result.
      */
     @Transactional
-    public GradingDto evaluate(SubmitSubmissionDto<BinarySearchSubmissionDto> submission) {
+    public GradingDto evaluate(SubmitSubmissionDto<HierarchicalClusteringSubmissionDto> submission) {
         // find task
         var task = this.taskRepository.findById(submission.taskId()).orElseThrow(() -> new EntityNotFoundException("Task " + submission.taskId() + " does not exist."));
 
@@ -85,9 +85,9 @@ public class EvaluationService {
                 feedback = this.messageSource.getMessage("input", new Object[]{submission.submission().input()}, locale);
                 break;
             case DIAGNOSE:
-                feedback = this.messageSource.getMessage(error == null && input.equals(task.getSolution()) ? "correct" : "incorrect", null, locale);
+                feedback = this.messageSource.getMessage(error == null && input.equals(task.hashCode()) ? "correct" : "incorrect", null, locale);
                 if (error == null) {
-                    int diff = task.getSolution() - input;
+                    int diff = task.hashCode() - input;
                     if (diff == 0)
                         points = task.getMaxPoints();
                     if (submission.feedbackLevel() > 0)
@@ -99,7 +99,7 @@ public class EvaluationService {
                 }
                 break;
             case SUBMIT:
-                if (error == null && input.equals(task.getSolution())) {
+                if (error == null && input.equals(task.hashCode())) {
                     feedback = this.messageSource.getMessage("correct", null, locale);
                     points = task.getMaxPoints();
                 } else

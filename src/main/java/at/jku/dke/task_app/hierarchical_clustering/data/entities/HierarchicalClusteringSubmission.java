@@ -12,28 +12,28 @@ import jakarta.validation.constraints.NotNull;
  */
 @Entity
 @Table(name = "submission")
-public class BinarySearchSubmission extends BaseSubmission<BinarySearchTask> {
+public class HierarchicalClusteringSubmission extends BaseSubmission<HierarchicalClusteringTask> {
     @NotNull
     @Column(name = "submission", nullable = false)
     private String submission;
 
     /**
-     * Creates a new instance of class {@link BinarySearchSubmission}.
+     * Creates a new instance of class {@link HierarchicalClusteringSubmission}.
      */
-    public BinarySearchSubmission() {
+    public HierarchicalClusteringSubmission() {
     }
 
     /**
-     * Creates a new instance of class {@link BinarySearchSubmission}.
+     * Creates a new instance of class {@link HierarchicalClusteringSubmission}.
      *
      * @param submission The input.
      */
-    public BinarySearchSubmission(String submission) {
+    public HierarchicalClusteringSubmission(String submission) {
         this.submission = submission;
     }
 
     /**
-     * Creates a new instance of class {@link BinarySearchSubmission}.
+     * Creates a new instance of class {@link HierarchicalClusteringSubmission}.
      *
      * @param userId        The user id.
      * @param assignmentId  The assignment id.
@@ -43,7 +43,7 @@ public class BinarySearchSubmission extends BaseSubmission<BinarySearchTask> {
      * @param mode          The mode.
      * @param submission    The input.
      */
-    public BinarySearchSubmission(String userId, String assignmentId, BinarySearchTask task, String language, int feedbackLevel, SubmissionMode mode, String submission) {
+    public HierarchicalClusteringSubmission(String userId, String assignmentId, HierarchicalClusteringTask task, String language, int feedbackLevel, SubmissionMode mode, String submission) {
         super(userId, assignmentId, task, language, feedbackLevel, mode);
         this.submission = submission;
     }

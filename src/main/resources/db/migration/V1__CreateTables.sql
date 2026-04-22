@@ -6,12 +6,39 @@ CREATE CAST (CHARACTER VARYING as submission_mode) WITH INOUT AS IMPLICIT;
 
 CREATE TABLE task
 (
-    id            BIGINT        NOT NULL,
-    max_points    NUMERIC(7, 2) NOT NULL,
-    status        TASK_STATUS   NOT NULL,
-    task_group_id BIGINT        NOT NULL,
-    solution      INTEGER       NOT NULL,
+    id                         BIGINT         NOT NULL,
+    max_points                 NUMERIC(7, 2)  NOT NULL,
+    status                     TASK_STATUS    NOT NULL,
+    distance_matrix            JSONB          NOT NULL,
+    points_per_correct_cluster NUMERIC(7, 2)  NOT NULL,
+
     CONSTRAINT task_pk PRIMARY KEY (id)
+);
+
+CREATE TABLE cluster
+(
+    id          UUID            DEFAULT gen_random_uuid(),
+    label       VARCHAR,
+    data_points VARCHAR(1)[],
+
+    CONSTRAINT cluster_pk PRIMARY KEY (id)
+);
+
+CREATE TABLE merge
+(
+    id            UUID               DEFAULT gen_random_uuid(),
+    cluster_left  UUID NOT NULL,
+    cluster_right UUID NOT NULL,
+    result        UUID NOT NULL,
+    distance      NUMERIC NOT NULL,
+    step          INTEGER NOT NULL,
+    task_id       BIGINT,
+
+    CONSTRAINT merge_pk PRIMARY KEY (id),
+    CONSTRAINT cluster_left_fk FOREIGN KEY (cluster_left) REFERENCES cluster (id),
+    CONSTRAINT cluster_right_fk FOREIGN KEY (cluster_right) REFERENCES cluster (id),
+    CONSTRAINT result_fk FOREIGN KEY (result) REFERENCES cluster (id),
+    CONSTRAINT task_fk FOREIGN KEY (task_id) REFERENCES task (id)
 );
 
 CREATE TABLE submission

@@ -9,5 +9,5 @@ import java.io.Serializable;
  *
  * @param solution The solution.
  */
-public record ModifyBinarySearchTaskDto(@NotNull Integer solution) implements Serializable {
+public record ModifyHierarchicalClusteringTaskDto(@NotNull Integer solution) implements Serializable {
 }

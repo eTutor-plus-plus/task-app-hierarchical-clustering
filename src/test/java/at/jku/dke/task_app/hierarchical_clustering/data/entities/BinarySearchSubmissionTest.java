@@ -12,7 +12,7 @@ class BinarySearchSubmissionTest {
         var expected = "test";
 
         // Act
-        var submission = new BinarySearchSubmission(expected);
+        var submission = new HierarchicalClusteringSubmission(expected);
         var actual = submission.getSubmission();
 
         // Assert
@@ -22,7 +22,7 @@ class BinarySearchSubmissionTest {
     @Test
     void testGetSetSubmission() {
         // Arrange
-        var submission = new BinarySearchSubmission();
+        var submission = new HierarchicalClusteringSubmission();
         var expected = "test";
 
         // Act
