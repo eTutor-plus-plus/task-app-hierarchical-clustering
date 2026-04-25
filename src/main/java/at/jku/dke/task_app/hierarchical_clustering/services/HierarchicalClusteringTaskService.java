@@ -6,11 +6,14 @@ import at.jku.dke.etutor.task_app.services.BaseTaskService;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
 import at.jku.dke.task_app.hierarchical_clustering.data.repositories.HierarchicalClusteringTaskRepository;
 import at.jku.dke.task_app.hierarchical_clustering.dto.ModifyHierarchicalClusteringTaskDto;
+import at.jku.dke.task_app.hierarchical_clustering.generators.DistanceMatrixGenerator;
+import jakarta.validation.Valid;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.util.Locale;
 
 /**
@@ -36,21 +39,30 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
     protected HierarchicalClusteringTask createTask(long id, ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
         if (!modifyTaskDto.taskType().equals("hierarchical-clustering"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid task type.");
-        return new HierarchicalClusteringTask();
+
+        HierarchicalClusteringTask task = new HierarchicalClusteringTask();
+        task.setPointsPerCorrectCluster(BigDecimal.ONE);
+        task.setDistanceMatrix(DistanceMatrixGenerator.getRandomMatrix(modifyTaskDto.additionalData().nDataPoints()));
+
+        return task;
     }
 
     @Override
     protected void updateTask(HierarchicalClusteringTask task, ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
         if (!modifyTaskDto.taskType().equals("hierarchical-clustering"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid task type.");
-        // task.setSolution(modifyTaskDto.additionalData().solution());
+        task.setPointsPerCorrectCluster(BigDecimal.ONE);
+        task.setDistanceMatrix(DistanceMatrixGenerator.getRandomMatrix(modifyTaskDto.additionalData().nDataPoints()));
     }
 
     @Override
     protected TaskModificationResponseDto mapToReturnData(HierarchicalClusteringTask task, boolean create) {
+        String matrixSvg = DistanceMatrixGenerator.getAsSvg(task.getDistanceMatrix());
+        Object[] args = {"agglomerative clustering", "minimum distance (single linkage)", matrixSvg};
+
         return new TaskModificationResponseDto(
             this.messageSource.getMessage("defaultTaskDescription", null, Locale.GERMAN),
-            this.messageSource.getMessage("defaultTaskDescription", null, Locale.ENGLISH)
+            this.messageSource.getMessage("defaultTaskDescription", args, Locale.ENGLISH)
         );
     }
 }

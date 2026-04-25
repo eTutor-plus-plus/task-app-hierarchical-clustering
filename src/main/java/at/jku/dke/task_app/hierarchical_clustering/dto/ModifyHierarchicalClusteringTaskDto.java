@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * This class represents a data transfer object for modifying a hierarchical clustering task.
  *
- * @param solution The solution.
+ * @param nDataPoints The number of data points to be generated for the task.
  */
-public record ModifyHierarchicalClusteringTaskDto(@NotNull Integer solution) implements Serializable {
+public record ModifyHierarchicalClusteringTaskDto(@NotNull Integer nDataPoints) implements Serializable {
 }

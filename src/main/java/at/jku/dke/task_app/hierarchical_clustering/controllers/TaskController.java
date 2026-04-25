@@ -24,7 +24,7 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
 
     @Override
     protected HierarchicalClusteringTaskDto mapToDto(HierarchicalClusteringTask task) {
-        return null;
+        return new HierarchicalClusteringTaskDto(task.getDistanceMatrix().getLabels().size());
     }
 
 }
