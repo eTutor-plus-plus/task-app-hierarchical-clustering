@@ -5,11 +5,12 @@ import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * DTO for {@link HierarchicalClusteringTask}
  *
  * @param nDataPoints The number of data points in the distance matrix.
  */
-public record HierarchicalClusteringTaskDto(@NotNull Integer nDataPoints) implements Serializable {
+public record HierarchicalClusteringTaskDto(@NotNull Integer nDataPoints, HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
 }

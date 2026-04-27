@@ -52,7 +52,11 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         if (!modifyTaskDto.taskType().equals("hierarchical-clustering"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid task type.");
         task.setPointsPerCorrectCluster(BigDecimal.ONE);
-        task.setDistanceMatrix(DistanceMatrixGenerator.getRandomMatrix(modifyTaskDto.additionalData().nDataPoints()));
+        if (modifyTaskDto.additionalData().nDataPoints() != task.getDistanceMatrix().getDistances().length) {
+            task.setDistanceMatrix(DistanceMatrixGenerator.getRandomMatrix(modifyTaskDto.additionalData().nDataPoints()));
+        } else {
+            task.setDistanceMatrix(modifyTaskDto.additionalData().distanceMatrix());
+        }
     }
 
     @Override
