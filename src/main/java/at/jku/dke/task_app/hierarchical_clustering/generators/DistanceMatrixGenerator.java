@@ -47,7 +47,7 @@ public class DistanceMatrixGenerator {
 		return new HierarchicalClusteringTask.DistanceMatrix(labels, matrix);
 	}
 
-    public static String getAsSvg(HierarchicalClusteringTask.DistanceMatrix matrix) {
+    public static String getAsImg(HierarchicalClusteringTask.DistanceMatrix matrix) {
         List<String> labels = matrix.getLabels();
         double[][] distances = matrix.getDistances();
 

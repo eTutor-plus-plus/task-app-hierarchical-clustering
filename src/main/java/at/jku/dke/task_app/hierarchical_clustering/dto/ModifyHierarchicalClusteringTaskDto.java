@@ -11,5 +11,8 @@ import java.util.List;
  *
  * @param nDataPoints The number of data points to be generated for the task.
  */
-public record ModifyHierarchicalClusteringTaskDto(@NotNull Integer nDataPoints, HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
+public record ModifyHierarchicalClusteringTaskDto(
+    @NotNull Integer nDataPoints,
+    @NotNull LinkageMethodDto linkageMethod,
+    HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
 }

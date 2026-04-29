@@ -1,12 +1,10 @@
 package at.jku.dke.task_app.hierarchical_clustering.data.entities;
 
 import at.jku.dke.etutor.task_app.data.entities.BaseTask;
-import at.jku.dke.etutor.task_app.data.entities.BaseTaskInGroup;
 import at.jku.dke.etutor.task_app.dto.TaskStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
+import at.jku.dke.task_app.hierarchical_clustering.data.converters.LinkageMethodConverter;
+import at.jku.dke.task_app.hierarchical_clustering.dto.LinkageMethodDto;
+import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -19,6 +17,10 @@ import java.util.List;
 @Entity
 @Table(name = "task")
 public class HierarchicalClusteringTask extends BaseTask {
+
+    @Convert(converter = LinkageMethodConverter.class)
+    @Column(name = "linkage", columnDefinition = "linkage_method not null default 'single'", nullable = false)
+    private LinkageMethodDto linkageMethod;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "distance_matrix", nullable = false)
@@ -68,6 +70,14 @@ public class HierarchicalClusteringTask extends BaseTask {
         super(id, maxPoints, status);
         this.distanceMatrix = distanceMatrix;
         this.pointsPerCorrectCluster = pointsPerCorrectCluster;
+    }
+
+    public LinkageMethodDto getLinkageMethod() {
+        return linkageMethod;
+    }
+
+    public void setLinkageMethod(LinkageMethodDto linkageMethod) {
+        this.linkageMethod = linkageMethod;
     }
 
     public DistanceMatrix getDistanceMatrix() {

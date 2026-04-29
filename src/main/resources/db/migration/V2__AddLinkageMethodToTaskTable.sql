@@ -1,0 +1,5 @@
+CREATE TYPE linkage_method AS ENUM ('single', 'complete');
+
+CREATE CAST (CHARACTER VARYING AS linkage_method) WITH INOUT AS IMPLICIT;
+
+ALTER TABLE task ADD COLUMN linkage LINKAGE_METHOD NOT NULL DEFAULT 'single';

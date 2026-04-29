@@ -12,5 +12,8 @@ import java.util.List;
  *
  * @param nDataPoints The number of data points in the distance matrix.
  */
-public record HierarchicalClusteringTaskDto(@NotNull Integer nDataPoints, HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
+public record HierarchicalClusteringTaskDto(
+    @NotNull Integer nDataPoints,
+    @NotNull LinkageMethodDto linkageMethod,
+    HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
 }
