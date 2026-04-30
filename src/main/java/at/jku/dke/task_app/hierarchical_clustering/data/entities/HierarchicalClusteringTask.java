@@ -1,10 +1,14 @@
 package at.jku.dke.task_app.hierarchical_clustering.data.entities;
 
 import at.jku.dke.etutor.task_app.data.entities.BaseTask;
+import at.jku.dke.etutor.task_app.data.entities.BaseTaskInGroup;
 import at.jku.dke.etutor.task_app.dto.TaskStatus;
+import at.jku.dke.task_app.hierarchical_clustering.data.converters.DistanceMetricConverter;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.LinkageMethodConverter;
+import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetricDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.LinkageMethodDto;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -18,9 +22,17 @@ import java.util.List;
 @Table(name = "task")
 public class HierarchicalClusteringTask extends BaseTask {
 
+    @Convert(converter = DistanceMetricConverter.class)
+    @Column(name = "metric", columnDefinition = "distance_metric")
+    private DistanceMetricDto distanceMetric;
+
     @Convert(converter = LinkageMethodConverter.class)
     @Column(name = "linkage", columnDefinition = "linkage_method not null default 'single'", nullable = false)
     private LinkageMethodDto linkageMethod;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "coordinate_list")
+    private List<CoordinatePoint> coordinateList;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "distance_matrix", nullable = false)
@@ -72,12 +84,28 @@ public class HierarchicalClusteringTask extends BaseTask {
         this.pointsPerCorrectCluster = pointsPerCorrectCluster;
     }
 
+    public DistanceMetricDto getDistanceMetric() {
+        return distanceMetric;
+    }
+
+    public void setDistanceMetric(DistanceMetricDto distanceMetric) {
+        this.distanceMetric = distanceMetric;
+    }
+
     public LinkageMethodDto getLinkageMethod() {
         return linkageMethod;
     }
 
     public void setLinkageMethod(LinkageMethodDto linkageMethod) {
         this.linkageMethod = linkageMethod;
+    }
+
+    public List<CoordinatePoint> getCoordinateList() {
+        return coordinateList;
+    }
+
+    public void setCoordinateList(List<CoordinatePoint> coordinateList) {
+        this.coordinateList = coordinateList;
     }
 
     public DistanceMatrix getDistanceMatrix() {
@@ -95,6 +123,46 @@ public class HierarchicalClusteringTask extends BaseTask {
     public void setPointsPerCorrectCluster(BigDecimal pointsPerCorrectCluster) {
         this.pointsPerCorrectCluster = pointsPerCorrectCluster;
     }
+
+
+    public static class CoordinatePoint {
+        private String label;
+        private double x;
+        private double y;
+
+        public CoordinatePoint() {}
+
+        public CoordinatePoint(String label, double x, double y) {
+            this.label = label;
+            this.x = x;
+            this.y = y;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public double getX() {
+            return x;
+        }
+
+        public void setX(double x) {
+            this.x = x;
+        }
+
+        public double getY() {
+            return y;
+        }
+
+        public void setY(double y) {
+            this.y = y;
+        }
+    }
+
 
     public static class DistanceMatrix {
         private List<String> labels;

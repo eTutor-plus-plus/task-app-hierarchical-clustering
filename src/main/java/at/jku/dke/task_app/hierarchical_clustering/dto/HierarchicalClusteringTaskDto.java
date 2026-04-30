@@ -4,8 +4,6 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * DTO for {@link HierarchicalClusteringTask}
@@ -13,6 +11,8 @@ import java.util.List;
  * @param nDataPoints The number of data points in the distance matrix.
  */
 public record HierarchicalClusteringTaskDto(
+    @NotNull GenerationStrategyDto generationStrategy,
+    @NotNull DistanceMetricDto distanceMetric,
     @NotNull Integer nDataPoints,
     @NotNull LinkageMethodDto linkageMethod,
     HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {

@@ -34,8 +34,8 @@ public class DistanceMatrixGenerator {
 		int idx = 0;
 
 		for (int i = 0; i < nDataPoints; i++) {
-			matrix[i][i] = 0.0;
             labels.add(String.valueOf(i + 1));
+			matrix[i][i] = 0.0;
 
 			for (int j = i + 1; j < nDataPoints; j++) {
 				matrix[i][j] = pool.get(idx);
@@ -46,6 +46,26 @@ public class DistanceMatrixGenerator {
 
 		return new HierarchicalClusteringTask.DistanceMatrix(labels, matrix);
 	}
+
+    public static HierarchicalClusteringTask.DistanceMatrix getMatrixFromCoordinates(List<HierarchicalClusteringTask.CoordinatePoint> points, DistanceMetric metric) {
+        int n = points.size();
+        List<String> labels = new ArrayList<>();
+        double[][] matrix = new double[n][n];
+
+        for (int i = 0; i < n; i++) {
+            labels.add(points.get(i).getLabel());
+            matrix[i][i] = 0.0;
+
+            for (int j = i + 1; j < n; j++) {
+                double d = metric.distance(points.get(i), points.get(j));
+
+                matrix[i][j] = d;
+                matrix[j][i] = d;
+            }
+        }
+
+        return new HierarchicalClusteringTask.DistanceMatrix(labels, matrix);
+    }
 
     public static String getAsImg(HierarchicalClusteringTask.DistanceMatrix matrix) {
         List<String> labels = matrix.getLabels();

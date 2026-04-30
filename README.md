@@ -3,7 +3,7 @@
 This application provides a REST-interface for following task type: hierarchical_clustering.
 
 Students have to create a hierarchy of clusters from a distance matrix that is either given or calculated 
-(from the given coordinates of each data point using the defined distance measure, e.g. Euclidian or Manhattan Distance)
+(from the given coordinates of each data point using the defined distance measure, e.g. Euclidean or Manhattan Distance)
 using the specified algorithm (agglomerative or divisive) with a certain distance measure (e.g. min or max distance).
 
 ## Development
