@@ -12,7 +12,7 @@ import java.io.Serializable;
  */
 public record HierarchicalClusteringTaskDto(
     @NotNull GenerationStrategyDto generationStrategy,
-    @NotNull DistanceMetricDto distanceMetric,
+    DistanceMetricDto distanceMetric,
     @NotNull Integer nDataPoints,
     @NotNull LinkageMethodDto linkageMethod,
     HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {

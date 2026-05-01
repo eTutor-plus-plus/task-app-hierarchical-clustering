@@ -33,7 +33,7 @@ public class HierarchicalClusteringTask extends BaseTask {
     private List<CoordinatePoint> coordinateList;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "distance_matrix", nullable = false)
+    @Column(name = "distance_matrix")
     private DistanceMatrix distanceMatrix;
 
     @Column(name = "points_per_correct_cluster", nullable = false, precision = 7, scale = 2)
