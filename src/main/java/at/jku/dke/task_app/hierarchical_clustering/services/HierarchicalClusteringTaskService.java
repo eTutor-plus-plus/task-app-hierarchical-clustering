@@ -73,17 +73,24 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
     protected TaskModificationResponseDto mapToReturnData(HierarchicalClusteringTask task, boolean create) {
         String algorithm = this.messageSource.getMessage("description.agglomerative", null, Locale.ENGLISH);
         String linkageMethod = this.messageSource.getMessage(task.getLinkageMethod().getTranslationKey(), null, Locale.ENGLISH);
-        String taskType = null;
+        String taskType;
 
+        String coordinatesTable = getAsHtmlTable(task.getCoordinateList());
+        System.out.println(coordinatesTable);
         String matrixImg = DistanceMatrixGenerator.getAsImg(task.getDistanceMatrix());
+
         if (!task.getCoordinateList().isEmpty()) {
-            taskType = this.messageSource.getMessage("description.coordinates",
-                new Object[]{this.messageSource.getMessage(task.getDistanceMetric().getTranslationKey(), null, Locale.ENGLISH), "coordinate list placeholder"},
+            taskType = this.messageSource.getMessage(
+                "description.coordinates",
+                new Object[]{
+                    this.messageSource.getMessage(task.getDistanceMetric().getTranslationKey(), null, Locale.ENGLISH),
+                    coordinatesTable},
                 Locale.ENGLISH);
         } else {
             taskType = this.messageSource.getMessage("description.matrix", new Object[]{matrixImg}, Locale.ENGLISH);
         }
-        Object[] args = { algorithm, linkageMethod, taskType};
+
+        Object[] args = { algorithm, linkageMethod, taskType };
 
         return new TaskModificationResponseDto(
             this.messageSource.getMessage("defaultTaskDescription", null, Locale.GERMAN),
@@ -123,5 +130,30 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         } else {
             task.setDistanceMatrix(DistanceMatrixGenerator.getRandomMatrix(modifyTaskDto.additionalData().nDataPoints()));
         }
+    }
+
+
+    private String getAsHtmlTable(List<HierarchicalClusteringTask.CoordinatePoint> points) {
+        StringBuilder html = new StringBuilder();
+
+        html.append("<table>");
+
+        html.append("<tr>");
+        html.append("<th></th>");
+        html.append("<th>x</th>");
+        html.append("<th>y</th>");
+        html.append("</tr>");
+
+        for (HierarchicalClusteringTask.CoordinatePoint p : points) {
+            html.append("<tr>");
+            html.append("<td>").append(p.getLabel()).append("</td>");
+            html.append("<td>").append(p.getX()).append("</td>");
+            html.append("<td>").append(p.getY()).append("</td>");
+            html.append("</tr>");
+        }
+
+        html.append("</table>");
+
+        return html.toString();
     }
 }

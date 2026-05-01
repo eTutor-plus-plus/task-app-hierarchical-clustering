@@ -1,14 +1,12 @@
 package at.jku.dke.task_app.hierarchical_clustering.data.entities;
 
 import at.jku.dke.etutor.task_app.data.entities.BaseTask;
-import at.jku.dke.etutor.task_app.data.entities.BaseTaskInGroup;
 import at.jku.dke.etutor.task_app.dto.TaskStatus;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.DistanceMetricConverter;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.LinkageMethodConverter;
 import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetricDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.LinkageMethodDto;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -129,8 +127,6 @@ public class HierarchicalClusteringTask extends BaseTask {
         private String label;
         private double x;
         private double y;
-
-        public CoordinatePoint() {}
 
         public CoordinatePoint(String label, double x, double y) {
             this.label = label;
