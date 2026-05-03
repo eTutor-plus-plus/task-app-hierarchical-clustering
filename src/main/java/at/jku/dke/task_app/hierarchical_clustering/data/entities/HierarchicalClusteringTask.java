@@ -39,6 +39,9 @@ public class HierarchicalClusteringTask extends BaseTask {
     @Column(name = "points_per_correct_cluster", nullable = false, precision = 7, scale = 2)
     private BigDecimal pointsPerCorrectCluster;
 
+    @Column(name = "wrong_order_penalty", precision = 7, scale = 2)
+    private BigDecimal wrongOrderPenalty;
+
     /**
      * Creates a new instance of class {@link HierarchicalClusteringTask}.
      */
@@ -122,6 +125,13 @@ public class HierarchicalClusteringTask extends BaseTask {
         this.pointsPerCorrectCluster = pointsPerCorrectCluster;
     }
 
+    public BigDecimal getWrongOrderPenalty() {
+        return wrongOrderPenalty;
+    }
+
+    public void setWrongOrderPenalty(BigDecimal wrongOrderPenalty) {
+        this.wrongOrderPenalty = wrongOrderPenalty;
+    }
 
     public static class CoordinatePoint {
         private String label;

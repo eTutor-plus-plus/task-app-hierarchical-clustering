@@ -5,9 +5,9 @@ import at.jku.dke.etutor.task_app.dto.TaskModificationResponseDto;
 import at.jku.dke.etutor.task_app.services.BaseTaskService;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
 import at.jku.dke.task_app.hierarchical_clustering.data.repositories.HierarchicalClusteringTaskRepository;
+import at.jku.dke.task_app.hierarchical_clustering.dto.AssignmentTypeDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetricDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.ModifyHierarchicalClusteringTaskDto;
-import at.jku.dke.task_app.hierarchical_clustering.dto.GenerationStrategyDto;
 import at.jku.dke.task_app.hierarchical_clustering.generators.*;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -42,12 +42,15 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         if (!modifyTaskDto.taskType().equals("hierarchical-clustering"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid task type.");
 
+        validateMaxPoints(modifyTaskDto);
+
         HierarchicalClusteringTask task = new HierarchicalClusteringTask();
 
         generateTaskData(task, modifyTaskDto);
 
         task.setLinkageMethod(modifyTaskDto.additionalData().linkageMethod());
-        task.setPointsPerCorrectCluster(BigDecimal.ONE);
+        task.setPointsPerCorrectCluster(modifyTaskDto.additionalData().pointsPerCorrectCluster());
+        task.setWrongOrderPenalty(modifyTaskDto.additionalData().wrongOrderPenalty());
 
         return task;
     }
@@ -57,12 +60,17 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         if (!modifyTaskDto.taskType().equals("hierarchical-clustering"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid task type.");
 
-        task.setLinkageMethod(modifyTaskDto.additionalData().linkageMethod());
-        task.setPointsPerCorrectCluster(BigDecimal.ONE);
+        validateMaxPoints(modifyTaskDto);
 
-        if (modifyTaskDto.additionalData().nDataPoints() != task.getDistanceMatrix().getDistances().length) {
+        task.setLinkageMethod(modifyTaskDto.additionalData().linkageMethod());
+        task.setPointsPerCorrectCluster(modifyTaskDto.additionalData().pointsPerCorrectCluster());
+        task.setWrongOrderPenalty(modifyTaskDto.additionalData().wrongOrderPenalty());
+
+        if (modifyTaskDto.additionalData().nDataPoints() != task.getDistanceMatrix().getDistances().length ||
+            (task.getCoordinateList() == null && modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.COORDINATES) ||
+            (task.getCoordinateList() != null && modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.MATRIX)) {
             generateTaskData(task, modifyTaskDto);
-        } else if (modifyTaskDto.additionalData().generationStrategy() == GenerationStrategyDto.MATRIX) {
+        } else if (modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.MATRIX) {
             task.setDistanceMatrix(modifyTaskDto.additionalData().distanceMatrix());
         } else {
             task.setDistanceMetric(modifyTaskDto.additionalData().distanceMetric());
@@ -75,16 +83,15 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         String linkageMethod = this.messageSource.getMessage(task.getLinkageMethod().getTranslationKey(), null, Locale.ENGLISH);
         String taskType;
 
-        String coordinatesTable = getAsHtmlTable(task.getCoordinateList());
-        System.out.println(coordinatesTable);
         String matrixImg = DistanceMatrixGenerator.getAsImg(task.getDistanceMatrix());
 
-        if (!task.getCoordinateList().isEmpty()) {
+        if (task.getCoordinateList() != null) {
+            String coordinatesTableHtml = getCoordinatesAsHtmlTable(task.getCoordinateList());
             taskType = this.messageSource.getMessage(
                 "description.coordinates",
                 new Object[]{
                     this.messageSource.getMessage(task.getDistanceMetric().getTranslationKey(), null, Locale.ENGLISH),
-                    coordinatesTable},
+                    coordinatesTableHtml},
                 Locale.ENGLISH);
         } else {
             taskType = this.messageSource.getMessage("description.matrix", new Object[]{matrixImg}, Locale.ENGLISH);
@@ -99,7 +106,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
     }
 
     private void generateTaskData(HierarchicalClusteringTask task, ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
-        if (modifyTaskDto.additionalData().generationStrategy() == GenerationStrategyDto.COORDINATES) {
+        if (modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.COORDINATES) {
             CoordinateGenerator coordinateGenerator;
             DistanceMetric distanceMetric;
 
@@ -128,12 +135,25 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
                 task.setDistanceMatrix(DistanceMatrixGenerator.getMatrixFromCoordinates(coordinatePoints, distanceMetric));
             }
         } else {
+            task.setCoordinateList(null);
+            task.setDistanceMetric(null);
             task.setDistanceMatrix(DistanceMatrixGenerator.getRandomMatrix(modifyTaskDto.additionalData().nDataPoints()));
         }
     }
 
+    private void validateMaxPoints(ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
+        BigDecimal expectedMaxPoints = modifyTaskDto.additionalData().pointsPerCorrectCluster().multiply(
+            BigDecimal.valueOf(modifyTaskDto.additionalData().nDataPoints() - 1));
 
-    private String getAsHtmlTable(List<HierarchicalClusteringTask.CoordinatePoint> points) {
+        if (expectedMaxPoints.compareTo(modifyTaskDto.maxPoints()) != 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Max. points (currently " + modifyTaskDto.maxPoints().doubleValue() +
+                    ") do not correspond to expected value (" + expectedMaxPoints.doubleValue() + ".");
+        }
+    }
+
+
+    private String getCoordinatesAsHtmlTable(List<HierarchicalClusteringTask.CoordinatePoint> points) {
         StringBuilder html = new StringBuilder();
 
         html.append("<table>");

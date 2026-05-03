@@ -4,6 +4,7 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * This class represents a data transfer object for modifying a hierarchical clustering task.
@@ -11,9 +12,11 @@ import java.io.Serializable;
  * @param nDataPoints The number of data points to be generated for the task.
  */
 public record ModifyHierarchicalClusteringTaskDto(
-    @NotNull GenerationStrategyDto generationStrategy,
+    @NotNull AssignmentTypeDto assignmentType,
     DistanceMetricDto distanceMetric,
     @NotNull Integer nDataPoints,
     @NotNull LinkageMethodDto linkageMethod,
+    @NotNull BigDecimal pointsPerCorrectCluster,
+    BigDecimal wrongOrderPenalty,
     HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
 }

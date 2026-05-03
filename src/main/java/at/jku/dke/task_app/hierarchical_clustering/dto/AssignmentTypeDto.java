@@ -1,11 +1,11 @@
 package at.jku.dke.task_app.hierarchical_clustering.dto;
 
-public enum GenerationStrategyDto {
+public enum AssignmentTypeDto {
     COORDINATES, MATRIX;
 
     private final String translationKey;
 
-    GenerationStrategyDto() {
+    AssignmentTypeDto() {
         translationKey = "description." + this.toString().toLowerCase();
     }
 
