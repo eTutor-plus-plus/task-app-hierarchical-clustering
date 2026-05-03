@@ -83,8 +83,6 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         String linkageMethod = this.messageSource.getMessage(task.getLinkageMethod().getTranslationKey(), null, Locale.ENGLISH);
         String taskType;
 
-        String matrixImg = DistanceMatrixGenerator.getAsImg(task.getDistanceMatrix());
-
         if (task.getCoordinateList() != null) {
             String coordinatesTableHtml = getCoordinatesAsHtmlTable(task.getCoordinateList());
             taskType = this.messageSource.getMessage(
@@ -94,7 +92,8 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
                     coordinatesTableHtml},
                 Locale.ENGLISH);
         } else {
-            taskType = this.messageSource.getMessage("description.matrix", new Object[]{matrixImg}, Locale.ENGLISH);
+            String matrixHtml = getMatrixAsHtmlTable(task.getDistanceMatrix());
+            taskType = this.messageSource.getMessage("description.matrix", new Object[]{matrixHtml}, Locale.ENGLISH);
         }
 
         Object[] args = { algorithm, linkageMethod, taskType };
@@ -166,9 +165,41 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
 
         for (HierarchicalClusteringTask.CoordinatePoint p : points) {
             html.append("<tr>");
-            html.append("<td>").append(p.getLabel()).append("</td>");
+            html.append("<th>").append(p.getLabel()).append("</th>");
             html.append("<td>").append(p.getX()).append("</td>");
             html.append("<td>").append(p.getY()).append("</td>");
+            html.append("</tr>");
+        }
+
+        html.append("</table>");
+
+        return html.toString();
+    }
+
+    private String getMatrixAsHtmlTable(HierarchicalClusteringTask.DistanceMatrix matrix) {
+        StringBuilder html = new StringBuilder();
+        List<String> labels = matrix.getLabels();
+        double[][] distances = matrix.getDistances();
+
+        html.append("<table>");
+
+        html.append("<tr>");
+        html.append("<th></th>");
+
+        for (String label : labels) {
+            html.append("<th>").append(label).append("</th>");
+        }
+
+        html.append("</tr>");
+
+        for (int i = 0; i < distances.length; i++) {
+            html.append("<tr>");
+            html.append("<th>").append(labels.get(i)).append("</th>");
+
+            for (int j = 0; j < distances[i].length && i >= j; j++) {
+                html.append("<td>").append(distances[i][j]).append("</td>");
+            }
+
             html.append("</tr>");
         }
 
