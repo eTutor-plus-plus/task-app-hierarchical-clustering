@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * This class represents a data transfer object for modifying a hierarchical clustering task.
@@ -18,5 +19,6 @@ public record ModifyHierarchicalClusteringTaskDto(
     @NotNull LinkageMethodDto linkageMethod,
     @NotNull BigDecimal pointsPerCorrectCluster,
     BigDecimal wrongOrderPenalty,
+    List<HierarchicalClusteringTask.CoordinatePoint> coordinatePoints,
     HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
 }

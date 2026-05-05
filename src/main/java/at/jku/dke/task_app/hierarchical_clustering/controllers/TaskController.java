@@ -33,6 +33,7 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
             task.getLinkageMethod(),
             task.getPointsPerCorrectCluster(),
             task.getWrongOrderPenalty(),
+            task.getCoordinateList(),
             task.getDistanceMatrix());
     }
 

@@ -68,12 +68,19 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
 
         if (modifyTaskDto.additionalData().nDataPoints() != task.getDistanceMatrix().getDistances().length ||
             (task.getCoordinateList() == null && modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.COORDINATES) ||
-            (task.getCoordinateList() != null && modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.MATRIX)) {
+            (task.getCoordinateList() != null && modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.MATRIX) ||
+            task.getDistanceMetric() != modifyTaskDto.additionalData().distanceMetric()) {
             generateTaskData(task, modifyTaskDto);
         } else if (modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.MATRIX) {
             task.setDistanceMatrix(modifyTaskDto.additionalData().distanceMatrix());
         } else {
+            DistanceMetric metric = switch (modifyTaskDto.additionalData().distanceMetric()) {
+                case EUCLIDEAN -> new EuclideanDistance();
+                case MANHATTAN -> new ManhattanDistance();
+            };
             task.setDistanceMetric(modifyTaskDto.additionalData().distanceMetric());
+            task.setCoordinateList(modifyTaskDto.additionalData().coordinatePoints());
+            task.setDistanceMatrix(DistanceMatrixGenerator.getMatrixFromCoordinates(modifyTaskDto.additionalData().coordinatePoints(), metric));
         }
     }
 
@@ -147,7 +154,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         if (expectedMaxPoints.compareTo(modifyTaskDto.maxPoints()) != 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Max. points (currently " + modifyTaskDto.maxPoints().doubleValue() +
-                    ") do not correspond to expected value (" + expectedMaxPoints.doubleValue() + ".");
+                    ") do not correspond to expected value (" + expectedMaxPoints.doubleValue() + ").");
         }
     }
 
