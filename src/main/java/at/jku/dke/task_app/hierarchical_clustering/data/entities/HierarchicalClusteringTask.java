@@ -2,10 +2,12 @@ package at.jku.dke.task_app.hierarchical_clustering.data.entities;
 
 import at.jku.dke.etutor.task_app.data.entities.BaseTask;
 import at.jku.dke.etutor.task_app.dto.TaskStatus;
+import at.jku.dke.task_app.hierarchical_clustering.data.converters.DendrogramModelConverter;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.DistanceMetricConverter;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.LinkageMethodConverter;
 import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetricDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.LinkageMethodDto;
+import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramModel;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -45,6 +47,11 @@ public class HierarchicalClusteringTask extends BaseTask {
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HierarchicalClusteringMerge> solutionMergeHistory = new ArrayList<>();
+
+    @Convert(converter = DendrogramModelConverter.class)
+    @Column(name = "dendrogram_model", columnDefinition = "jsonb", nullable = false)
+    @JdbcTypeCode(SqlTypes.JSON)
+    private DendrogramModel dendrogramModel;
 
     /**
      * Creates a new instance of class {@link HierarchicalClusteringTask}.
@@ -143,6 +150,14 @@ public class HierarchicalClusteringTask extends BaseTask {
 
     public void setSolutionMergeHistory(List<HierarchicalClusteringMerge> solutionMergeHistory) {
         this.solutionMergeHistory = solutionMergeHistory;
+    }
+
+    public DendrogramModel getDendrogramModel() {
+        return dendrogramModel;
+    }
+
+    public void setDendrogramModel(DendrogramModel dendrogramModel) {
+        this.dendrogramModel = dendrogramModel;
     }
 
     public static class CoordinatePoint {

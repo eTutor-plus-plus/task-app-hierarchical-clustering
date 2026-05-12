@@ -22,5 +22,6 @@ public record HierarchicalClusteringTaskDto(
     BigDecimal wrongOrderPenalty,
     List<HierarchicalClusteringTask.CoordinatePoint> coordinatePoints,
     HierarchicalClusteringTask.DistanceMatrix distanceMatrix,
-    String solution) implements Serializable {
+    String solution,
+    String dendrogramSvg) implements Serializable {
 }

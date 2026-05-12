@@ -7,6 +7,7 @@ import at.jku.dke.task_app.hierarchical_clustering.dto.AssignmentTypeDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.HierarchicalClusteringTaskDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.ModifyHierarchicalClusteringTaskDto;
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.HierarchicalClusteringSolution;
+import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramSvgRenderer;
 import at.jku.dke.task_app.hierarchical_clustering.services.HierarchicalClusteringTaskService;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,6 +40,8 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
                 .append(merge.getResult().getLabel()).append("}").append("\n");
         }
 
+        String dendrogramSvg = new DendrogramSvgRenderer().render(task.getDendrogramModel());
+
         return new HierarchicalClusteringTaskDto(
             assignmentType,
             task.getDistanceMetric(),
@@ -48,7 +51,8 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
             task.getWrongOrderPenalty(),
             task.getCoordinateList(),
             task.getDistanceMatrix(),
-            solutionBuilder.toString());
+            solutionBuilder.toString(),
+            dendrogramSvg);
     }
 
 }

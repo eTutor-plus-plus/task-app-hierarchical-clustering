@@ -16,6 +16,8 @@ import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.LinkageMe
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.LinkageMethods;
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.NaiveAgglomerativeClusteringAlgorithm;
 import at.jku.dke.task_app.hierarchical_clustering.generators.*;
+import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramModel;
+import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramModelBuilder;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -189,6 +191,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         List<HierarchicalClusteringMerge> solutionMergeHistory = new NaiveAgglomerativeClusteringAlgorithm(linkageMethod)
             .cluster(task.getDistanceMatrix());
 
+        // persist clusters and merges
         for (HierarchicalClusteringMerge merge : solutionMergeHistory) {
             HierarchicalClusteringCluster clusterLeft = merge.getClusterLeft();
             if (clusterLeft != null && clusterLeft.getDataPoints().size() == 1) {
@@ -205,6 +208,8 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             task.getSolutionMergeHistory().add(merge);
             merge.setTask(task);
         }
+
+        task.setDendrogramModel(new DendrogramModelBuilder().build(solutionMergeHistory));
     }
 
     private void validateMaxPoints(ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
