@@ -6,9 +6,9 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 import java.util.List;
 
 public class HierarchicalClusteringSolution {
-    private static List<HierarchicalClusteringMerge> solution = testSolution();
+
     public static List<HierarchicalClusteringMerge> getSolution() {
-        return solution;
+        return testSolution();
     }
 
     public static List<HierarchicalClusteringMerge> testSolution() {

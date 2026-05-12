@@ -37,6 +37,16 @@ public class HierarchicalClusteringMerge {
     @JoinColumn(name = "task_id")
     private HierarchicalClusteringTask task;
 
+    public HierarchicalClusteringMerge() {}
+
+    public HierarchicalClusteringMerge(HierarchicalClusteringCluster left, HierarchicalClusteringCluster right, HierarchicalClusteringCluster merged, double distance, int step) {
+        this.clusterLeft = left;
+        this.clusterRight = right;
+        this.result = merged;
+        this.distance = distance;
+        this.step = step;
+    }
+
     public void setId(UUID id) {
         this.id = id;
     }

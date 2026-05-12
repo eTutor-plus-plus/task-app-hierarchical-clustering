@@ -11,6 +11,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,6 +42,9 @@ public class HierarchicalClusteringTask extends BaseTask {
 
     @Column(name = "wrong_order_penalty", precision = 7, scale = 2)
     private BigDecimal wrongOrderPenalty;
+
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HierarchicalClusteringMerge> solutionMergeHistory = new ArrayList<>();
 
     /**
      * Creates a new instance of class {@link HierarchicalClusteringTask}.
@@ -131,6 +135,14 @@ public class HierarchicalClusteringTask extends BaseTask {
 
     public void setWrongOrderPenalty(BigDecimal wrongOrderPenalty) {
         this.wrongOrderPenalty = wrongOrderPenalty;
+    }
+
+    public List<HierarchicalClusteringMerge> getSolutionMergeHistory() {
+        return solutionMergeHistory;
+    }
+
+    public void setSolutionMergeHistory(List<HierarchicalClusteringMerge> solutionMergeHistory) {
+        this.solutionMergeHistory = solutionMergeHistory;
     }
 
     public static class CoordinatePoint {

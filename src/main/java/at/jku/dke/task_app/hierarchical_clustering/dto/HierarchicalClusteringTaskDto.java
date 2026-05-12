@@ -1,5 +1,6 @@
 package at.jku.dke.task_app.hierarchical_clustering.dto;
 
+import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
 import jakarta.validation.constraints.NotNull;
 
@@ -20,5 +21,6 @@ public record HierarchicalClusteringTaskDto(
     @NotNull BigDecimal pointsPerCorrectCluster,
     BigDecimal wrongOrderPenalty,
     List<HierarchicalClusteringTask.CoordinatePoint> coordinatePoints,
-    HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
+    HierarchicalClusteringTask.DistanceMatrix distanceMatrix,
+    String solution) implements Serializable {
 }

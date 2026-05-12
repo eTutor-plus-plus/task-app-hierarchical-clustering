@@ -3,11 +3,18 @@ package at.jku.dke.task_app.hierarchical_clustering.services;
 import at.jku.dke.etutor.task_app.dto.ModifyTaskDto;
 import at.jku.dke.etutor.task_app.dto.TaskModificationResponseDto;
 import at.jku.dke.etutor.task_app.services.BaseTaskService;
+import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringCluster;
+import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
+import at.jku.dke.task_app.hierarchical_clustering.data.repositories.HierarchicalClusteringClusterRepository;
+import at.jku.dke.task_app.hierarchical_clustering.data.repositories.HierarchicalClusteringMergeRepository;
 import at.jku.dke.task_app.hierarchical_clustering.data.repositories.HierarchicalClusteringTaskRepository;
 import at.jku.dke.task_app.hierarchical_clustering.dto.AssignmentTypeDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetricDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.ModifyHierarchicalClusteringTaskDto;
+import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.LinkageMethod;
+import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.LinkageMethods;
+import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.NaiveAgglomerativeClusteringAlgorithm;
 import at.jku.dke.task_app.hierarchical_clustering.generators.*;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -15,8 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * This class provides methods for managing {@link HierarchicalClusteringTask}s.
@@ -26,15 +32,20 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
 
     private final MessageSource messageSource;
 
+    private final HierarchicalClusteringMergeRepository mergeRepository;
+    private final HierarchicalClusteringClusterRepository clusterRepository;
+
     /**
      * Creates a new instance of class {@link HierarchicalClusteringTaskService}.
      *
      * @param repository          The task repository.
      * @param messageSource       The message source.
      */
-    public HierarchicalClusteringTaskService(HierarchicalClusteringTaskRepository repository, MessageSource messageSource) {
+    public HierarchicalClusteringTaskService(HierarchicalClusteringTaskRepository repository, MessageSource messageSource, HierarchicalClusteringMergeRepository mergeRepository, HierarchicalClusteringClusterRepository clusterRepository) {
         super(repository);
         this.messageSource = messageSource;
+        this.mergeRepository = mergeRepository;
+        this.clusterRepository = clusterRepository;
     }
 
     @Override
@@ -51,6 +62,8 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         task.setLinkageMethod(modifyTaskDto.additionalData().linkageMethod());
         task.setPointsPerCorrectCluster(modifyTaskDto.additionalData().pointsPerCorrectCluster());
         task.setWrongOrderPenalty(modifyTaskDto.additionalData().wrongOrderPenalty());
+
+        createSolution(task);
 
         return task;
     }
@@ -82,6 +95,26 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             task.setCoordinateList(modifyTaskDto.additionalData().coordinatePoints());
             task.setDistanceMatrix(DistanceMatrixGenerator.getMatrixFromCoordinates(modifyTaskDto.additionalData().coordinatePoints(), metric));
         }
+
+        // delete all old clusters and merges for this task (as they are not needed anymore) and compute and persist the new solution
+        List<HierarchicalClusteringMerge> oldSolution = task.getSolutionMergeHistory();
+        Map<List<String>, HierarchicalClusteringCluster> clusterLookup = new HashMap<>();
+
+        for (HierarchicalClusteringMerge merge : oldSolution) {
+            HierarchicalClusteringCluster clusterLeft = merge.getClusterLeft();
+            clusterLookup.putIfAbsent(clusterLeft.getDataPoints(), clusterLeft);
+
+            HierarchicalClusteringCluster clusterRight = merge.getClusterRight();
+            clusterLookup.putIfAbsent(clusterRight.getDataPoints(), clusterRight);
+
+            HierarchicalClusteringCluster result = merge.getResult();
+            clusterLookup.putIfAbsent(result.getDataPoints(), result);
+        }
+
+        task.getSolutionMergeHistory().clear();
+        mergeRepository.flush();
+        clusterRepository.deleteAll(clusterLookup.values());
+        createSolution(task);
     }
 
     @Override
@@ -144,6 +177,33 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             task.setCoordinateList(null);
             task.setDistanceMetric(null);
             task.setDistanceMatrix(DistanceMatrixGenerator.getRandomMatrix(modifyTaskDto.additionalData().nDataPoints()));
+        }
+    }
+
+    private void createSolution(HierarchicalClusteringTask task) {
+        LinkageMethod linkageMethod = switch (task.getLinkageMethod()) {
+            case SINGLE -> LinkageMethods.SINGLE;
+            case COMPLETE -> LinkageMethods.COMPLETE;
+        };
+
+        List<HierarchicalClusteringMerge> solutionMergeHistory = new NaiveAgglomerativeClusteringAlgorithm(linkageMethod)
+            .cluster(task.getDistanceMatrix());
+
+        for (HierarchicalClusteringMerge merge : solutionMergeHistory) {
+            HierarchicalClusteringCluster clusterLeft = merge.getClusterLeft();
+            if (clusterLeft != null && clusterLeft.getDataPoints().size() == 1) {
+                clusterRepository.save(clusterLeft);
+            }
+
+            HierarchicalClusteringCluster clusterRight = merge.getClusterRight();
+            if (clusterRight != null && clusterRight.getDataPoints().size() == 1) {
+                clusterRepository.save(clusterRight);
+            }
+
+            clusterRepository.save(merge.getResult());
+
+            task.getSolutionMergeHistory().add(merge);
+            merge.setTask(task);
         }
     }
 

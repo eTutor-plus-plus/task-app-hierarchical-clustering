@@ -7,7 +7,6 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
 import at.jku.dke.task_app.hierarchical_clustering.data.repositories.HierarchicalClusteringTaskRepository;
 import at.jku.dke.task_app.hierarchical_clustering.dto.HierarchicalClusteringSubmissionDto;
-import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.HierarchicalClusteringSolution;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +114,7 @@ public class EvaluationService {
     private BigDecimal evaluatePointsAndFeedback(HierarchicalClusteringTask task,
                                                  List<SyntaxParser.HierarchicalClusteringMergeWrapper> input,
                                                  Integer feedbackLevel, List<CriterionDto> criteria, Locale locale) {
-        List<HierarchicalClusteringMerge> correctSolution = HierarchicalClusteringSolution.getSolution();
+        List<HierarchicalClusteringMerge> correctSolution = task.getSolutionMergeHistory();
         BigDecimal achievedPoints = BigDecimal.ZERO;
 
         for (SyntaxParser.HierarchicalClusteringMergeWrapper merge : input) {
