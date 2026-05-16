@@ -9,21 +9,12 @@ public class HierarchicalClusteringSolutionFormatter {
 
     private HierarchicalClusteringSolutionFormatter() {}
 
-    public static HierarchicalClusteringCluster leafCluster(String label) {
-        HierarchicalClusteringCluster cluster = new HierarchicalClusteringCluster();
-        cluster.setLabel(label);
-        cluster.setDataPoints(Collections.singletonList(label));
-        return cluster;
-    }
-
     public static HierarchicalClusteringCluster mergeCluster(HierarchicalClusteringCluster left, HierarchicalClusteringCluster right) {
         List<String> combined = new ArrayList<>();
         combined.addAll(left.getDataPoints());
         combined.addAll(right.getDataPoints());
         Collections.sort(combined);
-        String label = String.join(",", combined);
         HierarchicalClusteringCluster cluster = new HierarchicalClusteringCluster();
-        cluster.setLabel(label);
         cluster.setDataPoints(combined);
         return cluster;
     }
@@ -58,10 +49,8 @@ public class HierarchicalClusteringSolutionFormatter {
     }
 
     private static HierarchicalClusteringCluster buildCluster(List<String> points) {
-        String label = String.join(",", points);
         HierarchicalClusteringCluster cluster = new HierarchicalClusteringCluster();
         cluster.setDataPoints(points);
-        cluster.setLabel(label);
         return cluster;
     }
 

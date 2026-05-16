@@ -30,8 +30,8 @@ public class HierarchicalClusteringCluster {
         return id;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    private void setLabel(List<String> dataPoints) {
+        this.label = "{" + String.join(",", dataPoints) + "}";
     }
 
     public String getLabel() {
@@ -40,6 +40,7 @@ public class HierarchicalClusteringCluster {
 
     public void setDataPoints(List<String> dataPoints) {
         this.dataPoints = dataPoints;
+        setLabel(dataPoints);
     }
 
     public List<String> getDataPoints() {

@@ -124,6 +124,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         String algorithm = this.messageSource.getMessage("description.agglomerative", null, Locale.ENGLISH);
         String linkageMethod = this.messageSource.getMessage(task.getLinkageMethod().getTranslationKey(), null, Locale.ENGLISH);
         String taskType;
+        String ordering;
 
         if (task.getCoordinateList() != null) {
             String coordinatesTableHtml = getCoordinatesAsHtmlTable(task.getCoordinateList());
@@ -138,7 +139,11 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             taskType = this.messageSource.getMessage("description.matrix", new Object[]{matrixHtml}, Locale.ENGLISH);
         }
 
-        Object[] args = { algorithm, linkageMethod, taskType };
+        ordering = task.getWrongOrderPenalty() != null && task.getWrongOrderPenalty().compareTo(BigDecimal.ZERO) == 0 ?
+            this.messageSource.getMessage("description.ordering", null, Locale.ENGLISH) :
+            "";
+
+        Object[] args = { algorithm, linkageMethod, taskType, ordering };
 
         return new TaskModificationResponseDto(
             this.messageSource.getMessage("defaultTaskDescription", null, Locale.GERMAN),

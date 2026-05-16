@@ -102,4 +102,9 @@ public class HierarchicalClusteringMerge {
     public void setTask(HierarchicalClusteringTask task) {
         this.task = task;
     }
+
+    @Override
+    public String toString() {
+        return "Distance " + distance + ": " + result.getLabel();
+    }
 }

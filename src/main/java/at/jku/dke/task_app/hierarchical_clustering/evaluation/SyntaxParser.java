@@ -2,39 +2,55 @@ package at.jku.dke.task_app.hierarchical_clustering.evaluation;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringCluster;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
+import org.springframework.context.MessageSource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class SyntaxParser {
 
-    public static List<HierarchicalClusteringMergeWrapper> parse(String input) {
+    private final MessageSource messageSource;
+    private int lineNumber;
+    private int stepNumber;
+
+    public SyntaxParser(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
+
+    public List<HierarchicalClusteringMergeWrapper> parse(String input, Locale locale) {
         List<HierarchicalClusteringMergeWrapper> result = new ArrayList<>();
-        int lineNumber = 1;
-        int stepNumber = 1;
+        lineNumber = 1;
+        stepNumber = 1;
 
         for (String line : input.split("\n")) {
             if (!line.isEmpty()) {
-                result.addAll(parseLine(lineNumber++, stepNumber, line));
+                result.addAll(parseLine(line, locale));
+                lineNumber++;
             }
         }
 
         return result;
     }
 
-    private static List<HierarchicalClusteringMergeWrapper> parseLine(int lineNumber, int stepNumber, String input) {
+    private List<HierarchicalClusteringMergeWrapper> parseLine(String input, Locale locale) {
         String normalized = normalizeLine(input);
+
+        if (normalized.isEmpty()) {
+            return List.of();
+        }
 
         String[] parts = normalized.split(":", 2);
         if (parts.length != 2) {
-            throw new IllegalArgumentException("Missing ':' separator");
+            throwSyntaxError("separator", locale, lineNumber);
         }
 
-        double distance;
+        double distance = -1;
         try {
             distance = Double.parseDouble(parts[0]);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid coordinates: " + parts[0]);
+            throwSyntaxError("distance", locale, parts[0], lineNumber);
         }
 
         List<HierarchicalClusteringMergeWrapper> merges = new ArrayList<>();
@@ -43,12 +59,12 @@ public class SyntaxParser {
         int i = 0;
         while (i < clusterPart.length()) {
             if (clusterPart.charAt(i) != '{') {
-                throw new IllegalArgumentException("Expected '{' at position " + i);
+                throwSyntaxError("openingBracket", locale, i, lineNumber);
             }
 
             int end = clusterPart.indexOf('}', i);
             if (end == -1) {
-                throw new IllegalArgumentException("Missing closing '}'");
+                throwSyntaxError("closingBracket", locale, lineNumber);
             }
 
             String inside = clusterPart.substring(i + 1, end);
@@ -57,8 +73,7 @@ public class SyntaxParser {
             merge.setStep(stepNumber++);
 
             HierarchicalClusteringCluster result = new HierarchicalClusteringCluster();
-            result.setLabel(inside);
-            result.setDataPoints(parsePoints(inside));
+            result.setDataPoints(parsePoints(inside, locale));
             merge.setResult(result);
 
             merges.add(new HierarchicalClusteringMergeWrapper(lineNumber, merge));
@@ -67,7 +82,7 @@ public class SyntaxParser {
 
             if (i < clusterPart.length()) {
                 if (clusterPart.charAt(i) != ',') {
-                    throw new IllegalArgumentException("Expected ',' between clusters at position " + i);
+                    throwSyntaxError("comma", locale, i, lineNumber);
                 }
                 i++;
             }
@@ -76,40 +91,28 @@ public class SyntaxParser {
         return merges;
     }
 
-    private static String normalizeLine(String input) {
+    private String normalizeLine(String input) {
         return input
             .replaceFirst("^[^0-9-]*", "")
             .replaceAll("\\s+", "");
     }
 
-    private static List<String> parsePoints(String input) {
+    private List<String> parsePoints(String input, Locale locale) {
         if (input.isEmpty()) {
-            throw new IllegalArgumentException("Empty cluster {} not allowed");
+            throwSyntaxError("emptyCluster", locale, lineNumber);
         }
 
         String[] parts = input.split(",");
 
-        // extra parse step to ensure that points are of correct format (currently not implemented)
-//        List<String> points = new ArrayList<>();
-//
-//        for (String p : parts) {
-//            int id;
-//            try {
-//                id = Integer.parseInt(p);
-//            } catch (NumberFormatException e) {
-//                throw new IllegalArgumentException("Data point " + p + " is of wrong format");
-//            }
-//
-//            if (p.isEmpty()) {
-//                throw new IllegalArgumentException("Empty point in cluster");
-//            } else if (!points.add(id)) {
-//                throw new IllegalArgumentException("Duplicate point in cluster");
-//            }
-//        }
-//
-//        return points;
-
         return List.of(parts);
+    }
+
+    private void throwSyntaxError(String syntaxCriterion, Locale locale, Object... args) {
+        throw new IllegalArgumentException(this.messageSource.getMessage(
+            "criterium.syntax." + syntaxCriterion,
+            args,
+            locale
+        ));
     }
 
     public record HierarchicalClusteringMergeWrapper(int line, HierarchicalClusteringMerge merge) {
