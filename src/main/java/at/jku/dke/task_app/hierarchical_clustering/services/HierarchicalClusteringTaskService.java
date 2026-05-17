@@ -16,8 +16,8 @@ import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.LinkageMe
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.LinkageMethods;
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.NaiveAgglomerativeClusteringAlgorithm;
 import at.jku.dke.task_app.hierarchical_clustering.generators.*;
-import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramModel;
 import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramModelBuilder;
+import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMaxPointsValidator;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -37,17 +37,21 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
     private final HierarchicalClusteringMergeRepository mergeRepository;
     private final HierarchicalClusteringClusterRepository clusterRepository;
 
+    // needed because neither the create/update task methods nor the ModifyTaskDto can be annotated with validation constraints
+    private final ValidMaxPointsValidator.Invoker maxPointsValidation;
+
     /**
      * Creates a new instance of class {@link HierarchicalClusteringTaskService}.
      *
      * @param repository          The task repository.
      * @param messageSource       The message source.
      */
-    public HierarchicalClusteringTaskService(HierarchicalClusteringTaskRepository repository, MessageSource messageSource, HierarchicalClusteringMergeRepository mergeRepository, HierarchicalClusteringClusterRepository clusterRepository) {
+    public HierarchicalClusteringTaskService(HierarchicalClusteringTaskRepository repository, MessageSource messageSource, HierarchicalClusteringMergeRepository mergeRepository, HierarchicalClusteringClusterRepository clusterRepository, ValidMaxPointsValidator.Invoker maxPointsValidation) {
         super(repository);
         this.messageSource = messageSource;
         this.mergeRepository = mergeRepository;
         this.clusterRepository = clusterRepository;
+        this.maxPointsValidation = maxPointsValidation;
     }
 
     @Override
@@ -55,7 +59,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         if (!modifyTaskDto.taskType().equals("hierarchical-clustering"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid task type.");
 
-        validateMaxPoints(modifyTaskDto);
+        maxPointsValidation.validate(new ValidMaxPointsValidator.MaxPointsValidationDto(modifyTaskDto.maxPoints(), modifyTaskDto.additionalData()));
 
         HierarchicalClusteringTask task = new HierarchicalClusteringTask();
 
@@ -75,7 +79,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         if (!modifyTaskDto.taskType().equals("hierarchical-clustering"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid task type.");
 
-        validateMaxPoints(modifyTaskDto);
+        maxPointsValidation.validate(new ValidMaxPointsValidator.MaxPointsValidationDto(modifyTaskDto.maxPoints(), modifyTaskDto.additionalData()));
 
         task.setLinkageMethod(modifyTaskDto.additionalData().linkageMethod());
         task.setPointsPerCorrectCluster(modifyTaskDto.additionalData().pointsPerCorrectCluster());
@@ -215,17 +219,6 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         }
 
         task.setDendrogramModel(new DendrogramModelBuilder().build(solutionMergeHistory));
-    }
-
-    private void validateMaxPoints(ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
-        BigDecimal expectedMaxPoints = modifyTaskDto.additionalData().pointsPerCorrectCluster().multiply(
-            BigDecimal.valueOf(modifyTaskDto.additionalData().nDataPoints() - 1));
-
-        if (expectedMaxPoints.compareTo(modifyTaskDto.maxPoints()) != 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "Max. points (currently " + modifyTaskDto.maxPoints().doubleValue() +
-                    ") do not correspond to expected value (" + expectedMaxPoints.doubleValue() + ").");
-        }
     }
 
 
