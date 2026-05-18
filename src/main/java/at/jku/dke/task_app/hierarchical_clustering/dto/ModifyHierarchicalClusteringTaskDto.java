@@ -5,6 +5,7 @@ import at.jku.dke.task_app.hierarchical_clustering.validation.DistinctDistances;
 import at.jku.dke.task_app.hierarchical_clustering.validation.ValidCoordinates;
 import at.jku.dke.task_app.hierarchical_clustering.validation.ValidDistances;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.io.Serializable;
@@ -23,6 +24,8 @@ public record ModifyHierarchicalClusteringTaskDto(
     @NotNull LinkageMethodDto linkageMethod,
     @NotNull @PositiveOrZero BigDecimal pointsPerCorrectCluster,
     @PositiveOrZero BigDecimal wrongOrderPenalty,
+    @Positive Integer lengthX,
+    @Positive Integer lengthY,
     @ValidCoordinates List<HierarchicalClusteringTask.CoordinatePoint> coordinatePoints,
     @ValidDistances @DistinctDistances HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
 }

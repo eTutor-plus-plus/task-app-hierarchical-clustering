@@ -33,7 +33,7 @@ public class HierarchicalClusteringTask extends BaseTask {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "coordinate_list")
-    private List<CoordinatePoint> coordinateList;
+    private CoordinateList coordinateList;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "distance_matrix")
@@ -112,11 +112,11 @@ public class HierarchicalClusteringTask extends BaseTask {
         this.linkageMethod = linkageMethod;
     }
 
-    public List<CoordinatePoint> getCoordinateList() {
+    public CoordinateList getCoordinateList() {
         return coordinateList;
     }
 
-    public void setCoordinateList(List<CoordinatePoint> coordinateList) {
+    public void setCoordinateList(CoordinateList coordinateList) {
         this.coordinateList = coordinateList;
     }
 
@@ -158,6 +158,42 @@ public class HierarchicalClusteringTask extends BaseTask {
 
     public void setDendrogramModel(DendrogramModel dendrogramModel) {
         this.dendrogramModel = dendrogramModel;
+    }
+
+    public static class CoordinateList {
+        private int lengthX;
+        private int lengthY;
+        private List<CoordinatePoint> coordinateList;
+
+        public CoordinateList(int lengthX, int lengthY, List<CoordinatePoint> coordinateList) {
+            this.lengthX = lengthX;
+            this.lengthY = lengthY;
+            this.coordinateList = coordinateList;
+        }
+
+        public int getLengthX() {
+            return lengthX;
+        }
+
+        public void setLengthX(int lengthX) {
+            this.lengthX = lengthX;
+        }
+
+        public int getLengthY() {
+            return lengthY;
+        }
+
+        public void setLengthY(int lengthY) {
+            this.lengthY = lengthY;
+        }
+
+        public List<CoordinatePoint> getCoordinateList() {
+            return coordinateList;
+        }
+
+        public void setCoordinateList(List<CoordinatePoint> coordinateList) {
+            this.coordinateList = coordinateList;
+        }
     }
 
     public static class CoordinatePoint {

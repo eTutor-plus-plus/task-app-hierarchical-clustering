@@ -88,7 +88,9 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         if (modifyTaskDto.additionalData().nDataPoints() != task.getDistanceMatrix().getDistances().length ||
             (task.getCoordinateList() == null && modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.COORDINATES) ||
             (task.getCoordinateList() != null && modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.MATRIX) ||
-            task.getDistanceMetric() != modifyTaskDto.additionalData().distanceMetric()) {
+            task.getDistanceMetric() != modifyTaskDto.additionalData().distanceMetric() ||
+            modifyTaskDto.additionalData().lengthX() != task.getCoordinateList().getLengthX() ||
+            modifyTaskDto.additionalData().lengthY() != task.getCoordinateList().getLengthY()) {
             generateTaskData(task, modifyTaskDto);
         } else if (modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.MATRIX) {
             task.setDistanceMatrix(modifyTaskDto.additionalData().distanceMatrix());
@@ -98,7 +100,10 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
                 case MANHATTAN -> new ManhattanDistance();
             };
             task.setDistanceMetric(modifyTaskDto.additionalData().distanceMetric());
-            task.setCoordinateList(modifyTaskDto.additionalData().coordinatePoints());
+            task.setCoordinateList(new HierarchicalClusteringTask.CoordinateList(
+                modifyTaskDto.additionalData().lengthX(),
+                modifyTaskDto.additionalData().lengthY(),
+                modifyTaskDto.additionalData().coordinatePoints()));
             task.setDistanceMatrix(DistanceMatrixGenerator.getMatrixFromCoordinates(modifyTaskDto.additionalData().coordinatePoints(), metric));
         }
 
@@ -131,7 +136,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         String ordering;
 
         if (task.getCoordinateList() != null) {
-            String coordinatesTableHtml = getCoordinatesAsHtmlTable(task.getCoordinateList());
+            String coordinatesTableHtml = getCoordinatesAsHtmlTable(task.getCoordinateList().getCoordinateList());
             taskType = this.messageSource.getMessage(
                 "description.coordinates",
                 new Object[]{
@@ -143,7 +148,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             taskType = this.messageSource.getMessage("description.matrix", new Object[]{matrixHtml}, Locale.ENGLISH);
         }
 
-        ordering = task.getWrongOrderPenalty() != null && task.getWrongOrderPenalty().compareTo(BigDecimal.ZERO) == 0 ?
+        ordering = task.getWrongOrderPenalty() != null && task.getWrongOrderPenalty().compareTo(BigDecimal.ZERO) > 0 ?
             this.messageSource.getMessage("description.ordering", null, Locale.ENGLISH) :
             "";
 
@@ -180,8 +185,12 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             if (coordinateGenerator == null) {
                 throw new IllegalArgumentException("Chosen distance metric does not exist or is not supported.");
             } else {
-                List<HierarchicalClusteringTask.CoordinatePoint> coordinatePoints = coordinateGenerator.generate(modifyTaskDto.additionalData().nDataPoints(), 10);
-                task.setCoordinateList(coordinatePoints);
+                int dimensionX = modifyTaskDto.additionalData().lengthX();
+                int dimensionY = modifyTaskDto.additionalData().lengthY();
+
+                List<HierarchicalClusteringTask.CoordinatePoint> coordinatePoints = coordinateGenerator.generate(
+                    modifyTaskDto.additionalData().nDataPoints(), dimensionX, dimensionY);
+                task.setCoordinateList(new HierarchicalClusteringTask.CoordinateList(dimensionX, dimensionY, coordinatePoints));
                 task.setDistanceMatrix(DistanceMatrixGenerator.getMatrixFromCoordinates(coordinatePoints, distanceMetric));
             }
         } else {

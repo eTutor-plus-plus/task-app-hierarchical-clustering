@@ -47,7 +47,9 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
             task.getLinkageMethod(),
             task.getPointsPerCorrectCluster(),
             task.getWrongOrderPenalty(),
-            task.getCoordinateList(),
+            task.getCoordinateList().getLengthX(),
+            task.getCoordinateList().getLengthY(),
+            task.getCoordinateList().getCoordinateList(),
             task.getDistanceMatrix(),
             solutionBuilder.toString(),
             dendrogramSvg);
