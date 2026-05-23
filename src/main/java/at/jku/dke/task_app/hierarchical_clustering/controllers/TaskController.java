@@ -29,7 +29,11 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
 
     @Override
     protected HierarchicalClusteringTaskDto mapToDto(HierarchicalClusteringTask task) {
-        AssignmentTypeDto assignmentType = task.getCoordinateList() == null ? AssignmentTypeDto.MATRIX : AssignmentTypeDto.COORDINATES;
+        HierarchicalClusteringTask.CoordinateList coordinateListSystem = task.getCoordinateList();
+        AssignmentTypeDto assignmentType = coordinateListSystem == null ? AssignmentTypeDto.MATRIX : AssignmentTypeDto.COORDINATES;
+        int lengthX = coordinateListSystem != null ? coordinateListSystem.getLengthX() : 10;
+        int lengthY = coordinateListSystem != null ? coordinateListSystem.getLengthY() : 10;
+        List<HierarchicalClusteringTask.CoordinatePoint> coordinateList = coordinateListSystem != null ? coordinateListSystem.getCoordinateList() : null;
 
         List<HierarchicalClusteringMerge> solutionMergeHistory = task.getSolutionMergeHistory();
         StringBuilder solutionBuilder = new StringBuilder();
@@ -47,9 +51,9 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
             task.getLinkageMethod(),
             task.getPointsPerCorrectCluster(),
             task.getWrongOrderPenalty(),
-            task.getCoordinateList().getLengthX(),
-            task.getCoordinateList().getLengthY(),
-            task.getCoordinateList().getCoordinateList(),
+            lengthX,
+            lengthY,
+            coordinateList,
             task.getDistanceMatrix(),
             solutionBuilder.toString(),
             dendrogramSvg);
