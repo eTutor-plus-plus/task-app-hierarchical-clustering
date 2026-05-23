@@ -6,8 +6,14 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 import at.jku.dke.task_app.hierarchical_clustering.dto.AssignmentTypeDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.HierarchicalClusteringTaskDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.ModifyHierarchicalClusteringTaskDto;
+import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramImageExporter;
 import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramSvgRenderer;
 import at.jku.dke.task_app.hierarchical_clustering.services.HierarchicalClusteringTaskService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -43,6 +49,12 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
         }
 
         String dendrogramSvg = new DendrogramSvgRenderer().render(task.getDendrogramModel());
+        byte[] dendrogramPng;
+        try {
+            dendrogramPng = new DendrogramImageExporter().export("png", dendrogramSvg);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         return new HierarchicalClusteringTaskDto(
             assignmentType,
@@ -56,7 +68,7 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
             coordinateList,
             task.getDistanceMatrix(),
             solutionBuilder.toString(),
-            dendrogramSvg);
+            dendrogramPng);
     }
 
 }

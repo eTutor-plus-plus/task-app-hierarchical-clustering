@@ -24,5 +24,5 @@ public record HierarchicalClusteringTaskDto(
     List<HierarchicalClusteringTask.CoordinatePoint> coordinatePoints,
     HierarchicalClusteringTask.DistanceMatrix distanceMatrix,
     String solution,
-    String dendrogramSvg) implements Serializable {
+    byte[] dendrogram) implements Serializable {
 }
