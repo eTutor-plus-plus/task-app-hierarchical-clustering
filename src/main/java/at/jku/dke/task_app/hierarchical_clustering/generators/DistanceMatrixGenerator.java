@@ -1,6 +1,7 @@
 package at.jku.dke.task_app.hierarchical_clustering.generators;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
+import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMatrix;
 
 import java.util.*;
 
@@ -46,6 +47,7 @@ public class DistanceMatrixGenerator {
 		return new HierarchicalClusteringTask.DistanceMatrix(labels, matrix);
 	}
 
+    @ValidMatrix
     public static HierarchicalClusteringTask.DistanceMatrix getMatrixFromCoordinates(List<HierarchicalClusteringTask.CoordinatePoint> points, DistanceMetric metric) {
         int n = points.size();
         List<String> labels = new ArrayList<>();

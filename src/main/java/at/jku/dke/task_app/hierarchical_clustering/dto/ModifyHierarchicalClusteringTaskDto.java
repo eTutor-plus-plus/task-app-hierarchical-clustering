@@ -1,9 +1,8 @@
 package at.jku.dke.task_app.hierarchical_clustering.dto;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
-import at.jku.dke.task_app.hierarchical_clustering.validation.DistinctDistances;
+import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMatrix;
 import at.jku.dke.task_app.hierarchical_clustering.validation.ValidCoordinates;
-import at.jku.dke.task_app.hierarchical_clustering.validation.ValidDistances;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -27,5 +26,5 @@ public record ModifyHierarchicalClusteringTaskDto(
     @Positive Integer lengthX,
     @Positive Integer lengthY,
     @ValidCoordinates List<HierarchicalClusteringTask.CoordinatePoint> coordinatePoints,
-    @ValidDistances @DistinctDistances HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
+    @ValidMatrix HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
 }

@@ -17,7 +17,6 @@ import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.LinkageMe
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.NaiveAgglomerativeClusteringAlgorithm;
 import at.jku.dke.task_app.hierarchical_clustering.generators.*;
 import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramModelBuilder;
-import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMaxPointsValidator;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -37,21 +36,17 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
     private final HierarchicalClusteringMergeRepository mergeRepository;
     private final HierarchicalClusteringClusterRepository clusterRepository;
 
-    // needed because neither the create/update task methods nor the ModifyTaskDto can be annotated with validation constraints
-    private final ValidMaxPointsValidator.Invoker maxPointsValidation;
-
     /**
      * Creates a new instance of class {@link HierarchicalClusteringTaskService}.
      *
      * @param repository          The task repository.
      * @param messageSource       The message source.
      */
-    public HierarchicalClusteringTaskService(HierarchicalClusteringTaskRepository repository, MessageSource messageSource, HierarchicalClusteringMergeRepository mergeRepository, HierarchicalClusteringClusterRepository clusterRepository, ValidMaxPointsValidator.Invoker maxPointsValidation) {
+    public HierarchicalClusteringTaskService(HierarchicalClusteringTaskRepository repository, MessageSource messageSource, HierarchicalClusteringMergeRepository mergeRepository, HierarchicalClusteringClusterRepository clusterRepository) {
         super(repository);
         this.messageSource = messageSource;
         this.mergeRepository = mergeRepository;
         this.clusterRepository = clusterRepository;
-        this.maxPointsValidation = maxPointsValidation;
     }
 
     @Override
@@ -59,7 +54,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         if (!modifyTaskDto.taskType().equals("hierarchical-clustering"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid task type.");
 
-        maxPointsValidation.validate(new ValidMaxPointsValidator.MaxPointsValidationDto(modifyTaskDto.maxPoints(), modifyTaskDto.additionalData()));
+        validateMaxPoints(modifyTaskDto);
 
         HierarchicalClusteringTask task = new HierarchicalClusteringTask();
 
@@ -79,7 +74,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         if (!modifyTaskDto.taskType().equals("hierarchical-clustering"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid task type.");
 
-        maxPointsValidation.validate(new ValidMaxPointsValidator.MaxPointsValidationDto(modifyTaskDto.maxPoints(), modifyTaskDto.additionalData()));
+        validateMaxPoints(modifyTaskDto);
 
         task.setLinkageMethod(modifyTaskDto.additionalData().linkageMethod());
         task.setPointsPerCorrectCluster(modifyTaskDto.additionalData().pointsPerCorrectCluster());
@@ -89,8 +84,8 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             (task.getCoordinateList() == null && modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.COORDINATES) ||
             (task.getCoordinateList() != null && modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.MATRIX) ||
             task.getDistanceMetric() != modifyTaskDto.additionalData().distanceMetric() ||
-            modifyTaskDto.additionalData().lengthX() != task.getCoordinateList().getLengthX() ||
-            modifyTaskDto.additionalData().lengthY() != task.getCoordinateList().getLengthY()) {
+            (task.getCoordinateList() != null && (modifyTaskDto.additionalData().lengthX() != task.getCoordinateList().getLengthX() ||
+            modifyTaskDto.additionalData().lengthY() != task.getCoordinateList().getLengthY()))) {
             generateTaskData(task, modifyTaskDto);
         } else if (modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.MATRIX) {
             task.setDistanceMatrix(modifyTaskDto.additionalData().distanceMatrix());
@@ -158,6 +153,16 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             this.messageSource.getMessage("defaultTaskDescription", null, Locale.GERMAN),
             this.messageSource.getMessage("description.general", args, Locale.ENGLISH)
         );
+    }
+
+    private void validateMaxPoints(ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
+        int nSolutionSteps = modifyTaskDto.additionalData().nDataPoints() - 1;
+        BigDecimal expectedMaxPoints = modifyTaskDto.additionalData().pointsPerCorrectCluster().multiply(BigDecimal.valueOf(nSolutionSteps));
+        BigDecimal actualMaxPoints = modifyTaskDto.maxPoints();
+
+        if (expectedMaxPoints.compareTo(actualMaxPoints) != 0) {
+            throw new IllegalArgumentException("Invalid max. points: need to be set to {0} (currently set value: {1}).");
+        }
     }
 
     private void generateTaskData(HierarchicalClusteringTask task, ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
