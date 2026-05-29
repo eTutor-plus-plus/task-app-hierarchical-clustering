@@ -10,7 +10,7 @@ import at.jku.dke.task_app.hierarchical_clustering.data.repositories.Hierarchica
 import at.jku.dke.task_app.hierarchical_clustering.data.repositories.HierarchicalClusteringMergeRepository;
 import at.jku.dke.task_app.hierarchical_clustering.data.repositories.HierarchicalClusteringTaskRepository;
 import at.jku.dke.task_app.hierarchical_clustering.dto.AssignmentTypeDto;
-import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetricDto;
+import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetric;
 import at.jku.dke.task_app.hierarchical_clustering.dto.ModifyHierarchicalClusteringTaskDto;
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.LinkageMethod;
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.LinkageMethods;
@@ -54,7 +54,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         if (!modifyTaskDto.taskType().equals("hierarchical-clustering"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid task type.");
 
-        validateMaxPoints(modifyTaskDto);
+        validateAdditional(modifyTaskDto);
 
         HierarchicalClusteringTask task = new HierarchicalClusteringTask();
 
@@ -74,32 +74,24 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         if (!modifyTaskDto.taskType().equals("hierarchical-clustering"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid task type.");
 
-        validateMaxPoints(modifyTaskDto);
+        validateAdditional(modifyTaskDto);
 
         task.setLinkageMethod(modifyTaskDto.additionalData().linkageMethod());
         task.setPointsPerCorrectCluster(modifyTaskDto.additionalData().pointsPerCorrectCluster());
         task.setWrongOrderPenalty(modifyTaskDto.additionalData().wrongOrderPenalty());
 
-        if (modifyTaskDto.additionalData().nDataPoints() != task.getDistanceMatrix().getDistances().length ||
-            (task.getCoordinateList() == null && modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.COORDINATES) ||
-            (task.getCoordinateList() != null && modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.MATRIX) ||
-            task.getDistanceMetric() != modifyTaskDto.additionalData().distanceMetric() ||
-            (task.getCoordinateList() != null && (modifyTaskDto.additionalData().lengthX() != task.getCoordinateList().getLengthX() ||
-            modifyTaskDto.additionalData().lengthY() != task.getCoordinateList().getLengthY()))) {
+        if (needsRegeneration(task, modifyTaskDto.additionalData())) {
             generateTaskData(task, modifyTaskDto);
+        } else if (modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.COORDINATES) {
+            DistanceMetric metric = modifyTaskDto.additionalData().distanceMetric();
+
+            HierarchicalClusteringTask.DistanceMatrix distanceMatrix = new DistanceMatrixGenerator()
+                .calculateMatrixFromCoordinates(modifyTaskDto.additionalData().coordinateSystem().getCoordinateList(), metric);
+            task.setCoordinateSystem(modifyTaskDto.additionalData().coordinateSystem());
+            task.setDistanceMetric(modifyTaskDto.additionalData().distanceMetric());
+            task.setDistanceMatrix(distanceMatrix);
         } else if (modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.MATRIX) {
             task.setDistanceMatrix(modifyTaskDto.additionalData().distanceMatrix());
-        } else {
-            DistanceMetric metric = switch (modifyTaskDto.additionalData().distanceMetric()) {
-                case EUCLIDEAN -> new EuclideanDistance();
-                case MANHATTAN -> new ManhattanDistance();
-            };
-            task.setDistanceMetric(modifyTaskDto.additionalData().distanceMetric());
-            task.setCoordinateList(new HierarchicalClusteringTask.CoordinateList(
-                modifyTaskDto.additionalData().lengthX(),
-                modifyTaskDto.additionalData().lengthY(),
-                modifyTaskDto.additionalData().coordinatePoints()));
-            task.setDistanceMatrix(DistanceMatrixGenerator.getMatrixFromCoordinates(modifyTaskDto.additionalData().coordinatePoints(), metric));
         }
 
         // delete all old clusters and merges for this task (as they are not needed anymore) and compute and persist the new solution
@@ -123,6 +115,20 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         createSolution(task);
     }
 
+    private boolean needsRegeneration(HierarchicalClusteringTask task, ModifyHierarchicalClusteringTaskDto data) {
+        boolean isDifferentN = data.nDataPoints() != task.getDistanceMatrix().getDistances().length;
+        boolean hasAssignmentTypeChangedToCoordinates = task.getCoordinateSystem() == null && data.assignmentType() == AssignmentTypeDto.COORDINATES;
+        boolean hasAssignmentTypeChangedToMatrix = task.getCoordinateSystem() != null && data.assignmentType() == AssignmentTypeDto.MATRIX;
+        boolean hasDistanceMetricChanged = data.assignmentType() == AssignmentTypeDto.COORDINATES && task.getDistanceMetric() != data.distanceMetric();
+        boolean haveAxisLengthsChanged = data.assignmentType() == AssignmentTypeDto.COORDINATES && task.getCoordinateSystem() != null &&
+            (data.coordinateSystem().getMinX() != task.getCoordinateSystem().getMinX() ||
+                data.coordinateSystem().getMaxX() != task.getCoordinateSystem().getMaxX() ||
+                data.coordinateSystem().getMinY() != task.getCoordinateSystem().getMinY() ||
+                data.coordinateSystem().getMaxY() != task.getCoordinateSystem().getMaxY());
+
+        return isDifferentN || hasAssignmentTypeChangedToCoordinates || hasAssignmentTypeChangedToMatrix || hasDistanceMetricChanged || haveAxisLengthsChanged;
+    }
+
     @Override
     protected TaskModificationResponseDto mapToReturnData(HierarchicalClusteringTask task, boolean create) {
         String algorithm = this.messageSource.getMessage("description.agglomerative", null, Locale.ENGLISH);
@@ -130,12 +136,12 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         String taskType;
         String ordering;
 
-        if (task.getCoordinateList() != null) {
-            String coordinatesTableHtml = getCoordinatesAsHtmlTable(task.getCoordinateList().getCoordinateList());
+        if (task.getCoordinateSystem() != null) {
+            String coordinatesTableHtml = getCoordinatesAsHtmlTable(task.getCoordinateSystem().getCoordinateList());
             taskType = this.messageSource.getMessage(
                 "description.coordinates",
                 new Object[]{
-                    this.messageSource.getMessage(task.getDistanceMetric().getTranslationKey(), null, Locale.ENGLISH),
+                    this.messageSource.getMessage("description." + task.getDistanceMetric().toString().toLowerCase(), null, Locale.ENGLISH),
                     coordinatesTableHtml},
                 Locale.ENGLISH);
         } else {
@@ -155,13 +161,19 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         );
     }
 
-    private void validateMaxPoints(ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
-        int nSolutionSteps = modifyTaskDto.additionalData().nDataPoints() - 1;
+    private void validateAdditional(ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
+        int n = modifyTaskDto.additionalData().nDataPoints();
+
+        if (n <= 1) {
+            throw new IllegalArgumentException("Task should have at least two data points.");
+        }
+
+        int nSolutionSteps = n - 1;
         BigDecimal expectedMaxPoints = modifyTaskDto.additionalData().pointsPerCorrectCluster().multiply(BigDecimal.valueOf(nSolutionSteps));
         BigDecimal actualMaxPoints = modifyTaskDto.maxPoints();
 
         if (expectedMaxPoints.compareTo(actualMaxPoints) != 0) {
-            throw new IllegalArgumentException("Invalid max. points: need to be set to {0} (currently set value: {1}).");
+            throw new IllegalArgumentException("Invalid max. points: need to be set to " + expectedMaxPoints + " (currently set value: " + actualMaxPoints + ").");
         }
     }
 
@@ -171,15 +183,15 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             DistanceMetric distanceMetric;
 
             switch (modifyTaskDto.additionalData().distanceMetric()) {
-                case DistanceMetricDto.EUCLIDEAN:
-                    task.setDistanceMetric(DistanceMetricDto.EUCLIDEAN);
+                case DistanceMetric.EUCLIDEAN:
+                    distanceMetric = DistanceMetric.EUCLIDEAN;
+                    task.setDistanceMetric(distanceMetric);
                     coordinateGenerator = new EuclideanCoordinateGenerator();
-                    distanceMetric = new EuclideanDistance();
                     break;
-                case DistanceMetricDto.MANHATTAN:
-                    task.setDistanceMetric(DistanceMetricDto.MANHATTAN);
+                case DistanceMetric.MANHATTAN:
+                    distanceMetric = DistanceMetric.MANHATTAN;
+                    task.setDistanceMetric(distanceMetric);
                     coordinateGenerator = new ManhattanCoordinateGenerator();
-                    distanceMetric = new ManhattanDistance();
                     break;
                 default:
                     coordinateGenerator = null;
@@ -190,18 +202,22 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             if (coordinateGenerator == null) {
                 throw new IllegalArgumentException("Chosen distance metric does not exist or is not supported.");
             } else {
-                int dimensionX = modifyTaskDto.additionalData().lengthX();
-                int dimensionY = modifyTaskDto.additionalData().lengthY();
+                HierarchicalClusteringTask.CoordinateSystem coordinateSystem = modifyTaskDto.additionalData().coordinateSystem();
+                int minX = coordinateSystem.getMinX();
+                int maxX = coordinateSystem.getMaxX();
+                int minY = coordinateSystem.getMinY();
+                int maxY = coordinateSystem.getMaxY();
 
-                List<HierarchicalClusteringTask.CoordinatePoint> coordinatePoints = coordinateGenerator.generate(
-                    modifyTaskDto.additionalData().nDataPoints(), dimensionX, dimensionY);
-                task.setCoordinateList(new HierarchicalClusteringTask.CoordinateList(dimensionX, dimensionY, coordinatePoints));
-                task.setDistanceMatrix(DistanceMatrixGenerator.getMatrixFromCoordinates(coordinatePoints, distanceMetric));
+                List<HierarchicalClusteringTask.CoordinatePoint> coordinateList =
+                    coordinateGenerator.generate(modifyTaskDto.additionalData().nDataPoints(), minX, maxX, minY, maxY);
+                coordinateSystem.setCoordinateList(coordinateList);
+                task.setCoordinateSystem(coordinateSystem);
+                task.setDistanceMatrix(new DistanceMatrixGenerator().calculateMatrixFromCoordinates(coordinateList, distanceMetric));
             }
         } else {
-            task.setCoordinateList(null);
+            task.setCoordinateSystem(null);
             task.setDistanceMetric(null);
-            task.setDistanceMatrix(DistanceMatrixGenerator.getRandomMatrix(modifyTaskDto.additionalData().nDataPoints()));
+            task.setDistanceMatrix(new DistanceMatrixGenerator().generate(modifyTaskDto.additionalData().nDataPoints()));
         }
     }
 
@@ -211,8 +227,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             case COMPLETE -> LinkageMethods.COMPLETE;
         };
 
-        List<HierarchicalClusteringMerge> solutionMergeHistory = new NaiveAgglomerativeClusteringAlgorithm(linkageMethod)
-            .cluster(task.getDistanceMatrix());
+        List<HierarchicalClusteringMerge> solutionMergeHistory = new NaiveAgglomerativeClusteringAlgorithm(linkageMethod).cluster(task.getDistanceMatrix());
 
         // persist clusters and merges
         for (HierarchicalClusteringMerge merge : solutionMergeHistory) {

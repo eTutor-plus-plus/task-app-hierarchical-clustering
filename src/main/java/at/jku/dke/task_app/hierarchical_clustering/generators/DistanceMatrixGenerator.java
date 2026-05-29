@@ -1,15 +1,16 @@
 package at.jku.dke.task_app.hierarchical_clustering.generators;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
+import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetric;
 import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMatrix;
 
 import java.util.*;
 
-public class DistanceMatrixGenerator {
+public class DistanceMatrixGenerator implements Generator<HierarchicalClusteringTask.DistanceMatrix> {
 
     private static final double STEP = 0.5;
 
-	public static HierarchicalClusteringTask.DistanceMatrix getRandomMatrix(int nDataPoints) {
+	public HierarchicalClusteringTask.DistanceMatrix generate(int nDataPoints, Random random) {
 		if (nDataPoints <= 0) throw new IllegalArgumentException("n must be > 0");
         // following line only if step should be manually assignable (by teachers)
 		// if (STEP <= 0) throw new IllegalArgumentException("step must be > 0");
@@ -18,7 +19,7 @@ public class DistanceMatrixGenerator {
 		int nPairs = nDataPoints * (nDataPoints - 1) / 2;
 
 		// build value pool with random expansion factor (to not have strictly ascending distances in the matrix, but more spread out distance values)
-		double expansionFactor = 1 + new Random().nextDouble();
+		double expansionFactor = 1 + random.nextDouble();
 		int poolSize = (int) Math.ceil(nPairs * expansionFactor);
 		List<Double> pool = new ArrayList<>(poolSize);
 		for (int i = 1; i <= poolSize; i++) {
@@ -26,7 +27,7 @@ public class DistanceMatrixGenerator {
 		}
 
 		// shuffle pool (to randomize positions of values in the matrix)
-		Collections.shuffle(pool, new Random());
+		Collections.shuffle(pool, random);
 
 		// fill matrix
         List<String> labels = new ArrayList<>(nDataPoints);
@@ -48,7 +49,7 @@ public class DistanceMatrixGenerator {
 	}
 
     @ValidMatrix
-    public static HierarchicalClusteringTask.DistanceMatrix getMatrixFromCoordinates(List<HierarchicalClusteringTask.CoordinatePoint> points, DistanceMetric metric) {
+    public HierarchicalClusteringTask.DistanceMatrix calculateMatrixFromCoordinates(List<HierarchicalClusteringTask.CoordinatePoint> points, DistanceMetric metric) {
         int n = points.size();
         List<String> labels = new ArrayList<>();
         double[][] matrix = new double[n][n];
@@ -58,7 +59,7 @@ public class DistanceMatrixGenerator {
             matrix[i][i] = 0.0;
 
             for (int j = i + 1; j < n; j++) {
-                double d = metric.distance(points.get(i), points.get(j));
+                double d = Math.round(metric.distance(points.get(i), points.get(j)) * 10) / 10.0;
 
                 matrix[i][j] = d;
                 matrix[j][i] = d;

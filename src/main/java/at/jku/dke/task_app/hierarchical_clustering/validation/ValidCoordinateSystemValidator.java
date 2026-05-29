@@ -7,39 +7,38 @@ import org.hibernate.validator.constraintvalidation.HibernateConstraintValidator
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 
-public class ValidCoordinatesValidator implements ConstraintValidator<ValidCoordinates, List<HierarchicalClusteringTask.CoordinatePoint>> {
+public class ValidCoordinateSystemValidator implements ConstraintValidator<ValidCoordinateSystem, HierarchicalClusteringTask.CoordinateSystem> {
 
     @Autowired
     private MessageSource messageSource;
 
-    public ValidCoordinatesValidator() {}
+    public ValidCoordinateSystemValidator() {}
 
     @Override
-    public boolean isValid(List<HierarchicalClusteringTask.CoordinatePoint> value, ConstraintValidatorContext context) {
-        if (value != null) { // before task creation and persistence, coordinate list is always null
-            for (HierarchicalClusteringTask.CoordinatePoint point : value) {
-                // check for negative points
-                if (point.getX() < 0 || point.getY() < 0) {
-                    putMessage(context, "negatives", new Object[]{point.getX(), point.getY()});
-                    return false;
-                }
-            }
+    public boolean isValid(HierarchicalClusteringTask.CoordinateSystem value, ConstraintValidatorContext context) {
+        if (value == null) {
+            return true;
+        }
+
+        // check for axis minimum exceeding maximum
+        if (value.getMaxX() <= value.getMinX() || value.getMaxY() <= value.getMinY()) {
+            putMessage(context, "overflow");
+            return false;
         }
 
         return true;
     }
 
-    private void putMessage(ConstraintValidatorContext context, String messageKey, Object[] messageParameters) {
+    private void putMessage(ConstraintValidatorContext context, String messageKey, Object... messageParameters) {
         if (context != null) {
             HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
 
             hibernateContext.disableDefaultConstraintViolation();
 
-            String message = this.messageSource.getMessage("validation.coordinateList." + messageKey, messageParameters, Locale.getDefault());
+            String message = this.messageSource.getMessage("validation.coordinateSystem." + messageKey, messageParameters, Locale.getDefault());
 
             hibernateContext
                 .addMessageParameter("0", message)

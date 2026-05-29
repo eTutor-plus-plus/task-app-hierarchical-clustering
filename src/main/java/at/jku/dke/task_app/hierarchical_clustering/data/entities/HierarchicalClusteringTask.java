@@ -5,7 +5,7 @@ import at.jku.dke.etutor.task_app.dto.TaskStatus;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.DendrogramModelConverter;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.DistanceMetricConverter;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.LinkageMethodConverter;
-import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetricDto;
+import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetric;
 import at.jku.dke.task_app.hierarchical_clustering.dto.LinkageMethodDto;
 import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramModel;
 import jakarta.persistence.*;
@@ -25,7 +25,7 @@ public class HierarchicalClusteringTask extends BaseTask {
 
     @Convert(converter = DistanceMetricConverter.class)
     @Column(name = "metric", columnDefinition = "distance_metric")
-    private DistanceMetricDto distanceMetric;
+    private DistanceMetric distanceMetric;
 
     @Convert(converter = LinkageMethodConverter.class)
     @Column(name = "linkage", columnDefinition = "linkage_method not null default 'single'", nullable = false)
@@ -33,7 +33,7 @@ public class HierarchicalClusteringTask extends BaseTask {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "coordinate_list")
-    private CoordinateList coordinateList;
+    private CoordinateSystem coordinateSystem;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "distance_matrix")
@@ -96,11 +96,11 @@ public class HierarchicalClusteringTask extends BaseTask {
         this.pointsPerCorrectCluster = pointsPerCorrectCluster;
     }
 
-    public DistanceMetricDto getDistanceMetric() {
+    public DistanceMetric getDistanceMetric() {
         return distanceMetric;
     }
 
-    public void setDistanceMetric(DistanceMetricDto distanceMetric) {
+    public void setDistanceMetric(DistanceMetric distanceMetric) {
         this.distanceMetric = distanceMetric;
     }
 
@@ -112,12 +112,12 @@ public class HierarchicalClusteringTask extends BaseTask {
         this.linkageMethod = linkageMethod;
     }
 
-    public CoordinateList getCoordinateList() {
-        return coordinateList;
+    public CoordinateSystem getCoordinateSystem() {
+        return coordinateSystem;
     }
 
-    public void setCoordinateList(CoordinateList coordinateList) {
-        this.coordinateList = coordinateList;
+    public void setCoordinateSystem(CoordinateSystem coordinateSystem) {
+        this.coordinateSystem = coordinateSystem;
     }
 
     public DistanceMatrix getDistanceMatrix() {
@@ -160,31 +160,51 @@ public class HierarchicalClusteringTask extends BaseTask {
         this.dendrogramModel = dendrogramModel;
     }
 
-    public static class CoordinateList {
-        private int lengthX;
-        private int lengthY;
+    public static class CoordinateSystem {
+        private int minX;
+        private int maxX;
+        private int minY;
+        private int maxY;
         private List<CoordinatePoint> coordinateList;
 
-        public CoordinateList(int lengthX, int lengthY, List<CoordinatePoint> coordinateList) {
-            this.lengthX = lengthX;
-            this.lengthY = lengthY;
+        public CoordinateSystem(int minX, int maxX, int minY, int maxY, List<CoordinatePoint> coordinateList) {
+            this.minX = minX;
+            this.maxX = maxX;
+            this.minY = minY;
+            this.maxY = maxY;
             this.coordinateList = coordinateList;
         }
 
-        public int getLengthX() {
-            return lengthX;
+        public int getMinX() {
+            return minX;
         }
 
-        public void setLengthX(int lengthX) {
-            this.lengthX = lengthX;
+        public void setMinX(int minX) {
+            this.minX = minX;
         }
 
-        public int getLengthY() {
-            return lengthY;
+        public int getMaxX() {
+            return maxX;
         }
 
-        public void setLengthY(int lengthY) {
-            this.lengthY = lengthY;
+        public void setMaxX(int maxX) {
+            this.maxX = maxX;
+        }
+
+        public int getMinY() {
+            return minY;
+        }
+
+        public void setMinY(int minY) {
+            this.minY = minY;
+        }
+
+        public int getMaxY() {
+            return maxY;
+        }
+
+        public void setMaxY(int maxY) {
+            this.maxY = maxY;
         }
 
         public List<CoordinatePoint> getCoordinateList() {

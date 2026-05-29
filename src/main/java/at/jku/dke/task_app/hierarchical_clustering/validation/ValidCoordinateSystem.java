@@ -8,9 +8,9 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {ValidCoordinatesValidator.class})
-public @interface ValidCoordinates {
-    String message() default "{validation.coordinateList}";
+@Constraint(validatedBy = {ValidCoordinateSystemValidator.class})
+public @interface ValidCoordinateSystem {
+    String message() default "{validation.coordinateSystem}";
 
     Class<?>[] groups() default {};
 

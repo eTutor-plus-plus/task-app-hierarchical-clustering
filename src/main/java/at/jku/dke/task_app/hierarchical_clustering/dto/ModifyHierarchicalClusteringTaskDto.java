@@ -2,14 +2,12 @@ package at.jku.dke.task_app.hierarchical_clustering.dto;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
 import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMatrix;
-import at.jku.dke.task_app.hierarchical_clustering.validation.ValidCoordinates;
+import at.jku.dke.task_app.hierarchical_clustering.validation.ValidCoordinateSystem;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * This class represents a data transfer object for modifying a hierarchical clustering task.
@@ -18,13 +16,11 @@ import java.util.List;
  */
 public record ModifyHierarchicalClusteringTaskDto(
     @NotNull AssignmentTypeDto assignmentType,
-    DistanceMetricDto distanceMetric,
+    DistanceMetric distanceMetric,
     @NotNull @PositiveOrZero Integer nDataPoints,
     @NotNull LinkageMethodDto linkageMethod,
     @NotNull @PositiveOrZero BigDecimal pointsPerCorrectCluster,
     @PositiveOrZero BigDecimal wrongOrderPenalty,
-    @Positive Integer lengthX,
-    @Positive Integer lengthY,
-    @ValidCoordinates List<HierarchicalClusteringTask.CoordinatePoint> coordinatePoints,
+    @ValidCoordinateSystem HierarchicalClusteringTask.CoordinateSystem coordinateSystem,
     @ValidMatrix HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {
 }

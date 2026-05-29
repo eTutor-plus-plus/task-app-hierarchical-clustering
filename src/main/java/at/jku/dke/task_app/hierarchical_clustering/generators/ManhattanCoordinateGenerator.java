@@ -4,43 +4,54 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 
 import java.util.*;
 
-public class ManhattanCoordinateGenerator implements CoordinateGenerator {
-	@Override
-	public List<HierarchicalClusteringTask.CoordinatePoint> generate(int n, double lengthX, double lengthY) {
-        List<double[]> candidates = new ArrayList<>();
-        for (double x = 0; x <= lengthX + 1e-9; x += 0.1) {
-            for (double y = 0; y <= lengthY + 1e-9; y += 0.1) {
-                candidates.add(new double[]{Math.round(x * 10) / 10.0, Math.round(y * 10) / 10.0});
-            }
-        }
-        Collections.shuffle(candidates);
+public class ManhattanCoordinateGenerator extends CoordinateGenerator {
+
+    private static final int maxRestarts = 100;
+
+    @Override
+	public List<HierarchicalClusteringTask.CoordinatePoint> generate(int n, double minX, double maxX, double minY, double maxY, Random random) {
+        int minStepX = (int) (minX * 10);
+        int maxStepX = (int) (maxX * 10);
+        int minStepY = (int) (minY * 10);
+        int maxStepY = (int) (maxY * 10);
+        List<int[]> candidates = buildGenericCandidatePool(minStepX, maxStepX, minStepY, maxStepY);
+
+        Collections.shuffle(candidates, random);
 
         List<HierarchicalClusteringTask.CoordinatePoint> points = new ArrayList<>();
-        Set<Double> usedDistances = new HashSet<>();
+        Set<Integer> usedDistances = new HashSet<>();
 
-        for (double[] c : candidates) {
-            Set<Double> newDists = new HashSet<>();
-            boolean valid = true;
+        for (int restart = 0; restart <= maxRestarts; restart += 1) {
+            for (int[] c : candidates) {
+                Set<Integer> newDists = new HashSet<>();
+                boolean valid = true;
 
-            for (var p : points) {
-                double dist = Math.round((Math.abs(c[0] - p.getX()) + Math.abs(c[1] - p.getY())) * 10) / 10.0;
-                if (usedDistances.contains(dist) || newDists.contains(dist)) {
-                    valid = false;
-                    break;
+                for (var p : points) {
+                    int dist = Math.abs(c[0] - (int) (p.getX() * 10)) + Math.abs(c[1] - (int) (p.getY() * 10));
+
+                    if (usedDistances.contains(dist) || newDists.contains(dist)) {
+                        valid = false;
+                        break;
+                    }
+
+                    newDists.add(dist);
                 }
-                newDists.add(dist);
-            }
 
-            if (valid) {
-                points.add(new HierarchicalClusteringTask.CoordinatePoint(String.valueOf(points.size() + 1), c[0], c[1]));
-                usedDistances.addAll(newDists);
-                if (points.size() == n) break;
+                if (valid) {
+                    points.add(new HierarchicalClusteringTask.CoordinatePoint(String.valueOf(points.size() + 1), c[0] / 10.0, c[1] / 10.0));
+                    usedDistances.addAll(newDists);
+                    if (points.size() == n) {
+                        return points;
+                    }
+                }
             }
         }
 
         if (points.size() < n) {
-            throw new RuntimeException("Cannot generate enough points with unique Manhattan distances in the given space");
+            throw new RuntimeException("Could not generate " + n + " points satisfying all constraints after " +
+                maxRestarts + " restarts. Retry generation by saving again, or try a larger grid or fewer points.");
         }
+
         return points;
 	}
 }

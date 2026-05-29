@@ -1,11 +1,13 @@
 package at.jku.dke.task_app.hierarchical_clustering.dto;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
+import at.jku.dke.task_app.hierarchical_clustering.validation.ValidCoordinateSystem;
+import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMatrix;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * DTO for {@link HierarchicalClusteringTask}
@@ -14,15 +16,13 @@ import java.util.List;
  */
 public record HierarchicalClusteringTaskDto(
     @NotNull AssignmentTypeDto assignmentType,
-    DistanceMetricDto distanceMetric,
-    @NotNull Integer nDataPoints,
+    DistanceMetric distanceMetric,
+    @NotNull @PositiveOrZero Integer nDataPoints,
     @NotNull LinkageMethodDto linkageMethod,
-    @NotNull BigDecimal pointsPerCorrectCluster,
-    BigDecimal wrongOrderPenalty,
-    Integer lengthX,
-    Integer lengthY,
-    List<HierarchicalClusteringTask.CoordinatePoint> coordinatePoints,
-    HierarchicalClusteringTask.DistanceMatrix distanceMatrix,
+    @NotNull @PositiveOrZero BigDecimal pointsPerCorrectCluster,
+    @PositiveOrZero BigDecimal wrongOrderPenalty,
+    @ValidCoordinateSystem HierarchicalClusteringTask.CoordinateSystem coordinateSystem,
+    @ValidMatrix HierarchicalClusteringTask.DistanceMatrix distanceMatrix,
     String solution,
     byte[] dendrogram) implements Serializable {
 }

@@ -9,11 +9,6 @@ import at.jku.dke.task_app.hierarchical_clustering.dto.ModifyHierarchicalCluster
 import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramImageExporter;
 import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramSvgRenderer;
 import at.jku.dke.task_app.hierarchical_clustering.services.HierarchicalClusteringTaskService;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -35,11 +30,8 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
 
     @Override
     protected HierarchicalClusteringTaskDto mapToDto(HierarchicalClusteringTask task) {
-        HierarchicalClusteringTask.CoordinateList coordinateListSystem = task.getCoordinateList();
-        AssignmentTypeDto assignmentType = coordinateListSystem == null ? AssignmentTypeDto.MATRIX : AssignmentTypeDto.COORDINATES;
-        int lengthX = coordinateListSystem != null ? coordinateListSystem.getLengthX() : 10;
-        int lengthY = coordinateListSystem != null ? coordinateListSystem.getLengthY() : 10;
-        List<HierarchicalClusteringTask.CoordinatePoint> coordinateList = coordinateListSystem != null ? coordinateListSystem.getCoordinateList() : null;
+        HierarchicalClusteringTask.CoordinateSystem coordinateSystem = task.getCoordinateSystem();
+        AssignmentTypeDto assignmentType = coordinateSystem == null ? AssignmentTypeDto.MATRIX : AssignmentTypeDto.COORDINATES;
 
         List<HierarchicalClusteringMerge> solutionMergeHistory = task.getSolutionMergeHistory();
         StringBuilder solutionBuilder = new StringBuilder();
@@ -63,9 +55,7 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
             task.getLinkageMethod(),
             task.getPointsPerCorrectCluster(),
             task.getWrongOrderPenalty(),
-            lengthX,
-            lengthY,
-            coordinateList,
+            coordinateSystem,
             task.getDistanceMatrix(),
             solutionBuilder.toString(),
             dendrogramPng);

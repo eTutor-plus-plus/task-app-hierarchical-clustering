@@ -4,85 +4,158 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 
 import java.util.*;
 
-public class EuclideanCoordinateGenerator implements CoordinateGenerator {
+public class EuclideanCoordinateGenerator extends CoordinateGenerator {
+
+    private static final int maxAttemptsPerPoint = 200_000;
+    private static final int maxRestarts = 50;
 
     @Override
-	public List<HierarchicalClusteringTask.CoordinatePoint> generate(int n, double lengthX, double lengthY) {
-		// Build candidate grid: multiples of 0.5 within bounds
-		List<double[]> grid = buildGrid(lengthX, lengthY);
+    public List<HierarchicalClusteringTask.CoordinatePoint> generate(int n, double minX, double maxX, double minY, double maxY, Random random) {
+        // arithmetic is done in integer tenths to avoid floating-point error
+        int xMinSteps = (int) Math.round(minX * 10);
+        int xMaxSteps = (int) Math.round(maxX * 10);
+        int yMinSteps = (int) Math.round(minY * 10);
+        int yMaxSteps = (int) Math.round(maxY * 10);
+        // to allow for only a number of coordinates to be the same (as coordinate generation tends to fill one axis with the same coordinates otherwise)
+        int maxSharedCoordinates = (int) Math.ceil((double) n / Math.min(xMaxSteps + 1, yMaxSteps + 1) * 1.5);
+        maxSharedCoordinates = Math.max(1, maxSharedCoordinates); // always allow at least 1
 
-		if (grid.size() < n) {
-			throw new IllegalArgumentException(
-					"Not enough grid positions (" + grid.size() + ") for " + n + " points in a "
-							+ lengthX + "x" + lengthY + " space. Increase space size or reduce n.");
-		}
+        List<int[]> allCandidates = buildGenericCandidatePool(xMinSteps, xMaxSteps, yMinSteps, yMaxSteps);
 
-		Random rng = new Random();
-		Collections.shuffle(grid, rng);
+        if (allCandidates.size() < n) {
+            throw new IllegalArgumentException(
+                "The grid (" + allCandidates.size() + " points) is too small to hold " + n + " points."
+            );
+        }
 
-		List<HierarchicalClusteringTask.CoordinatePoint> result = new ArrayList<>();
-		// Store squared distances (×4 to work in integers) to avoid floating-point ambiguity
-		Set<Long> usedDistancesSq = new HashSet<>();
-		List<HierarchicalClusteringTask.CoordinatePoint> placed = new ArrayList<>();
+        for (int restart = 0; restart <= maxRestarts; restart++) {
+            List<HierarchicalClusteringTask.CoordinatePoint> result    = new ArrayList<>();
+            List<int[]> placed = new ArrayList<>();
+            Set<Double> usedDists = new HashSet<>();
 
-		for (double[] candidate : grid) {
-			if (placed.size() == n) break;
+            // Track how many placed points share each x or y value (in tenths)
+            Map<Integer, Integer> xCount = new HashMap<>();
+            Map<Integer, Integer> yCount = new HashMap<>();
 
-			double cx = candidate[0];
-			double cy = candidate[1];
+            List<int[]> remaining = new ArrayList<>(allCandidates);
+            boolean runFailed = false;
 
-			// Compute squared distances (×4) to all already-placed points
-			List<Long> newDistsSq = new ArrayList<>();
-			boolean collision = false;
+            for (int i = 0; i < n; i++) {
+                boolean placedFlag = false;
+                int attempts = 0;
 
-			for (HierarchicalClusteringTask.CoordinatePoint existing : placed) {
-				double dx = cx - existing.getX();
-				double dy = cy - existing.getY();
-				// Multiply by 4 and round to integer to avoid floating-point issues
-				long dSq4 = Math.round(4.0 * (dx * dx + dy * dy));
-				if (usedDistancesSq.contains(dSq4)) {
-					collision = true;
-					break;
-				}
-				// Also check among the new distances themselves (no duplicates within batch)
-				if (newDistsSq.contains(dSq4)) {
-					collision = true;
-					break;
-				}
-				newDistsSq.add(dSq4);
-			}
+                Collections.shuffle(remaining, random);
 
-			if (!collision) {
-				String id = String.valueOf(placed.size() + 1);
-				HierarchicalClusteringTask.CoordinatePoint dp = new HierarchicalClusteringTask.CoordinatePoint(id, cx, cy);
-				placed.add(dp);
-				result.add(dp);
-				usedDistancesSq.addAll(newDistsSq);
-			}
-		}
+                Iterator<int[]> it = remaining.iterator();
 
-		if (placed.size() < n) {
-			throw new IllegalStateException(
-					"Could only place " + placed.size() + " of " + n
-							+ " points without distance duplicates. "
-							+ "Try a larger space or fewer points.");
-		}
+                while (it.hasNext() && attempts < maxAttemptsPerPoint) {
+                    int[] cand = it.next();
+                    attempts++;
 
-		return result;
-	}
+                    // Reject if this candidate would push any axis count over the limit
+                    if (xCount.getOrDefault(cand[0], 0) >= maxSharedCoordinates) continue;
+                    if (yCount.getOrDefault(cand[1], 0) >= maxSharedCoordinates) continue;
 
-	private List<double[]> buildGrid(double lengthX, double lengthY) {
-		List<double[]> grid = new ArrayList<>();
-		// Step of 0.5 ensures (a-b)^2 is always a multiple of 0.25,
-		// and sqrt of a sum of two such values rounds cleanly to 1 decimal.
-		double step = 0.5;
-		for (double x = 0.0; x <= lengthX + 1e-9; x += step) {
-			double rx = Math.round(x * 10.0) / 10.0;
-			for (double y = 0.0; y <= lengthY + 1e-9; y += step) {
-				double ry = Math.round(y * 10.0) / 10.0;
-				grid.add(new double[]{rx, ry});
-			}
-		}
-		return grid;
-	}
+                    if (isValidCandidate(cand, placed, usedDists)) {
+                        Set<Double> newDists = newDistances(cand, placed);
+
+                        result.add(new HierarchicalClusteringTask.CoordinatePoint(
+                            String.valueOf(i + 1),
+                            cand[0] / 10.0,
+                            cand[1] / 10.0
+                        ));
+
+                        placed.add(cand);
+                        usedDists.addAll(newDists);
+                        xCount.merge(cand[0], 1, Integer::sum);
+                        yCount.merge(cand[1], 1, Integer::sum);
+
+                        it.remove();
+                        placedFlag = true;
+                        break;
+                    }
+                }
+
+                if (!placedFlag) {
+                    runFailed = true;
+                    break;
+                }
+            }
+
+            if (!runFailed) {
+                return result;
+            }
+        }
+
+        throw new RuntimeException(
+            "Could not generate " + n + " points satisfying all constraints after " +
+                maxRestarts + " restarts. Try a larger grid or fewer points."
+        );
+    }
+
+    private static boolean hasExactOneDecimalDistance(int dxi, int dyi) {
+        if (dxi == 0 && dyi == 0) {
+            return true;
+        }
+
+        long sumSq = (long) dxi * dxi + (long) dyi * dyi;
+        long root  = Math.round(Math.sqrt(sumSq));
+
+        for (long r = Math.max(0, root - 1); r <= root + 1; r++) {
+            if (r * r == sumSq) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static double exactDistance(int dxi, int dyi) {
+        if (dxi == 0 && dyi == 0) {
+            return 0.0;
+        }
+
+        long sumSq = (long) dxi * dxi + (long) dyi * dyi;
+        long root  = Math.round(Math.sqrt(sumSq));
+
+        for (long r = Math.max(0, root - 1); r <= root + 1; r++) {
+            if (r * r == sumSq) {
+                return r / 10.0;
+            }
+        }
+
+        throw new ArithmeticException("No exact root — call hasExactOneDecimalDistance first.");
+    }
+
+    private static boolean isValidCandidate(int[] cand, List<int[]> placed, Set<Double> usedDists) {
+        Set<Double> tentative = new HashSet<>();
+        for (int[] p : placed) {
+            int dxi = cand[0] - p[0];
+            int dyi = cand[1] - p[1];
+
+            if (!hasExactOneDecimalDistance(dxi, dyi)) {
+                return false;
+            }
+
+            double dist = exactDistance(dxi, dyi);
+
+            if (usedDists.contains(dist) || tentative.contains(dist)) {
+                return false;
+            }
+
+            tentative.add(dist);
+        }
+
+        return true;
+    }
+
+    private static Set<Double> newDistances(int[] cand, List<int[]> placed) {
+        Set<Double> dists = new HashSet<>();
+
+        for (int[] p : placed) {
+            dists.add(exactDistance(cand[0] - p[0], cand[1] - p[1]));
+        }
+
+        return dists;
+    }
 }
