@@ -99,11 +99,11 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         Map<List<String>, HierarchicalClusteringCluster> clusterLookup = new HashMap<>();
 
         for (HierarchicalClusteringMerge merge : oldSolution) {
-            HierarchicalClusteringCluster clusterLeft = merge.getClusterLeft();
-            clusterLookup.putIfAbsent(clusterLeft.getDataPoints(), clusterLeft);
+            HierarchicalClusteringCluster sourceCluster1 = merge.getSourceCluster1();
+            clusterLookup.putIfAbsent(sourceCluster1.getDataPoints(), sourceCluster1);
 
-            HierarchicalClusteringCluster clusterRight = merge.getClusterRight();
-            clusterLookup.putIfAbsent(clusterRight.getDataPoints(), clusterRight);
+            HierarchicalClusteringCluster sourceCluster2 = merge.getSourceCluster2();
+            clusterLookup.putIfAbsent(sourceCluster2.getDataPoints(), sourceCluster2);
 
             HierarchicalClusteringCluster result = merge.getResult();
             clusterLookup.putIfAbsent(result.getDataPoints(), result);
@@ -231,14 +231,14 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
 
         // persist clusters and merges
         for (HierarchicalClusteringMerge merge : solutionMergeHistory) {
-            HierarchicalClusteringCluster clusterLeft = merge.getClusterLeft();
-            if (clusterLeft != null && clusterLeft.getDataPoints().size() == 1) {
-                clusterRepository.save(clusterLeft);
+            HierarchicalClusteringCluster sourceCluster1 = merge.getSourceCluster1();
+            if (sourceCluster1 != null && sourceCluster1.getDataPoints().size() == 1) {
+                clusterRepository.save(sourceCluster1);
             }
 
-            HierarchicalClusteringCluster clusterRight = merge.getClusterRight();
-            if (clusterRight != null && clusterRight.getDataPoints().size() == 1) {
-                clusterRepository.save(clusterRight);
+            HierarchicalClusteringCluster sourceCluster2 = merge.getSourceCluster2();
+            if (sourceCluster2 != null && sourceCluster2.getDataPoints().size() == 1) {
+                clusterRepository.save(sourceCluster2);
             }
 
             clusterRepository.save(merge.getResult());
@@ -246,6 +246,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             task.getSolutionMergeHistory().add(merge);
             merge.setTask(task);
         }
+
 
         task.setDendrogramModel(new DendrogramModelBuilder().build(solutionMergeHistory));
     }

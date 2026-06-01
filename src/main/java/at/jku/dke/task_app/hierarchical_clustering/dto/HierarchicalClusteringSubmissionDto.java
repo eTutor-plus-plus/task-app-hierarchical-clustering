@@ -8,5 +8,5 @@ import jakarta.validation.constraints.Size;
  *
  * @param input The user input.
  */
-public record HierarchicalClusteringSubmissionDto(@NotNull @Size(max = 255) String input) {
+public record HierarchicalClusteringSubmissionDto(@NotNull String input) {
 }

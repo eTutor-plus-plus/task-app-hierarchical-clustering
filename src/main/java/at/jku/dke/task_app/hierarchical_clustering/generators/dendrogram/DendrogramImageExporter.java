@@ -13,19 +13,25 @@ import java.nio.charset.StandardCharsets;
 
 public class DendrogramImageExporter {
 
-    public byte[] export(String format, String svg) throws Exception {
+    public enum ImageFormat {
+        PNG(new PNGTranscoder());
+
+        private final ImageTranscoder transcoder;
+
+        ImageFormat(ImageTranscoder transcoder) {
+            this.transcoder = transcoder;
+        }
+    }
+
+    public byte[] export(ImageFormat format, String svg) throws Exception {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             export(format, svg, out);
             return out.toByteArray();
         }
     }
 
-    private void export(String format, String svg, OutputStream out) throws Exception {
-        ImageTranscoder transcoder = switch (format.toLowerCase()) {
-            case "png" -> new PNGTranscoder();
-            case "jpeg", "jpg" -> new JPEGTranscoder();
-            default -> throw new IllegalArgumentException("Image format " + format.toLowerCase() + " is not supported.");
-        };
+    private void export(ImageFormat format, String svg, OutputStream out) throws Exception {
+        ImageTranscoder transcoder = format.transcoder;
 
         byte[] svgBytes = svg.getBytes(StandardCharsets.UTF_8);
         TranscoderInput input = new TranscoderInput(new ByteArrayInputStream(svgBytes));

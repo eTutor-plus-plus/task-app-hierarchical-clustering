@@ -4,46 +4,55 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 import org.springframework.context.MessageSource;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SyntaxParser {
 
     private final MessageSource messageSource;
+    private final Locale locale;
+
     private int lineNumber;
     private int stepNumber;
+    private double previousDistance;
 
-    public SyntaxParser(MessageSource messageSource) {
+    public SyntaxParser(MessageSource messageSource, Locale locale) {
         this.messageSource = messageSource;
+        this.locale = locale;
     }
 
-    public List<HierarchicalClusteringMergeWrapper> parse(String input, Locale locale) {
-        List<HierarchicalClusteringMergeWrapper> result = new ArrayList<>();
+    public MergeEventWrapper parse(String input) {
+        List<HierarchicalClusteringMerge> merges = new ArrayList<>();
+        MergeEventWrapper eventWrapper = new MergeEventWrapper();
+        eventWrapper.isCorrectOrder = true;
+
         lineNumber = 1;
         stepNumber = 1;
+        previousDistance = -1.0;
 
         for (String line : input.split("\n")) {
             if (!line.isEmpty()) {
-                result.addAll(parseLine(line, locale));
+                parseLine(line, merges, eventWrapper);
                 lineNumber++;
             }
         }
 
-        return result;
+        buildMergeEvents(merges, eventWrapper);
+
+        return eventWrapper;
     }
 
-    private List<HierarchicalClusteringMergeWrapper> parseLine(String input, Locale locale) {
+    private void parseLine(String input, List<HierarchicalClusteringMerge> merges, MergeEventWrapper eventWrapper) {
         String normalized = normalizeLine(input);
 
         if (normalized.isEmpty()) {
-            return List.of();
+            return;
         }
 
         String[] parts = normalized.split(":", 2);
         if (parts.length != 2) {
-            throwSyntaxError("separator", locale, lineNumber);
+            throwSyntaxError("separator", lineNumber);
         }
 
         double distance = -1;
@@ -53,16 +62,22 @@ public class SyntaxParser {
             throwSyntaxError("distance", locale, parts[0], lineNumber);
         }
 
-        List<HierarchicalClusteringMergeWrapper> merges = new ArrayList<>();
+        // ordering should be ascending, so new distance has to be equal or higher for correct order
+        if (distance < previousDistance) {
+            eventWrapper.isCorrectOrder = false;
+        }
+
+        previousDistance = distance;
+
         String clusterPart = parts[1];
 
         int i = 0;
         while (i < clusterPart.length()) {
-            if (clusterPart.charAt(i) != '{') {
-                throwSyntaxError("openingBracket", locale, i, lineNumber);
+            if (clusterPart.charAt(i) != '(') {
+                throwSyntaxError("openingBracket", locale, lineNumber);
             }
 
-            int end = clusterPart.indexOf('}', i);
+            int end = clusterPart.indexOf(')', i);
             if (end == -1) {
                 throwSyntaxError("closingBracket", locale, lineNumber);
             }
@@ -73,10 +88,9 @@ public class SyntaxParser {
             merge.setStep(stepNumber++);
 
             HierarchicalClusteringCluster result = new HierarchicalClusteringCluster();
-            result.setDataPoints(parsePoints(inside, locale));
+            result.setDataPoints(parsePoints(inside));
             merge.setResult(result);
-
-            merges.add(new HierarchicalClusteringMergeWrapper(lineNumber, merge));
+            merges.add(merge);
 
             i = end + 1;
 
@@ -87,27 +101,60 @@ public class SyntaxParser {
                 i++;
             }
         }
-
-        return merges;
     }
 
     private String normalizeLine(String input) {
         return input
-            .replaceFirst("^[^0-9-]*", "")
+            .replaceFirst("^[^0-9.:-]*", "") // also allows decimal points and minuses to be parsed (no syntax error, but potential semantic error), and also catches empty distances by not cutting the ":" separator
             .replaceAll("\\s+", "");
     }
 
-    private List<String> parsePoints(String input, Locale locale) {
+    private List<String> parsePoints(String input) {
         if (input.isEmpty()) {
             throwSyntaxError("emptyCluster", locale, lineNumber);
         }
 
         String[] parts = input.split(",");
 
-        return List.of(parts);
+        return Stream.of(parts).sorted().toList();
     }
 
-    private void throwSyntaxError(String syntaxCriterion, Locale locale, Object... args) {
+    private void buildMergeEvents(List<HierarchicalClusteringMerge> merges, MergeEventWrapper eventWrapper) {
+        SortedMap<Double, EvaluationService.MergeEventAtDistance> mergeEvents = new TreeMap<>();
+        SortedMap<Double, List<HierarchicalClusteringMerge>> mergesByDistance = merges.stream()
+                .collect(Collectors.groupingBy(HierarchicalClusteringMerge::getDistance, TreeMap::new, Collectors.toList()));
+
+        for (double distance: mergesByDistance.keySet()) {
+            List<HierarchicalClusteringMerge> mergeList = mergesByDistance.get(distance);
+            List<HierarchicalClusteringMerge> newMerges = new ArrayList<>();
+            List<HierarchicalClusteringMerge> inheritedMerges = new ArrayList<>();
+
+            for (HierarchicalClusteringMerge merge : mergeList) {
+                boolean inherited = false;
+
+                for (double key : mergeEvents.keySet()) {
+                    // only traverses all new merges of lower distances because inherited merges at lower distances always correspond to an existing new merge
+                    if (key < distance && mergeEvents.get(key).newMerges().stream()
+                            .anyMatch(m -> m.getResult().equals(merge.getResult()))) {
+                        inherited = true;
+                        break;
+                    }
+                }
+
+                if (inherited) {
+                    inheritedMerges.add(merge);
+                } else {
+                    newMerges.add(merge);
+                }
+            }
+
+            mergeEvents.put(distance, new EvaluationService.MergeEventAtDistance(newMerges, inheritedMerges, null));
+        }
+
+        eventWrapper.mergeEvents = mergeEvents;
+    }
+
+    private void throwSyntaxError(String syntaxCriterion, Object... args) {
         throw new IllegalArgumentException(this.messageSource.getMessage(
             "criterium.syntax." + syntaxCriterion,
             args,
@@ -115,7 +162,19 @@ public class SyntaxParser {
         ));
     }
 
-    public record HierarchicalClusteringMergeWrapper(int line, HierarchicalClusteringMerge merge) {
+    public static class MergeEventWrapper {
+        private boolean isCorrectOrder;
+        private SortedMap<Double, EvaluationService.MergeEventAtDistance> mergeEvents;
+
+        private MergeEventWrapper() {}
+
+        public boolean isCorrectOrder() {
+            return isCorrectOrder;
+        }
+
+        public SortedMap<Double, EvaluationService.MergeEventAtDistance> mergeEvents() {
+            return mergeEvents;
+        }
     }
 
 }

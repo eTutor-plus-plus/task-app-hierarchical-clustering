@@ -19,15 +19,15 @@ public class DendrogramModelBuilder {
         Map<String, DendrogramModel.Node> nodeMap = new HashMap<>();
 
         for (HierarchicalClusteringMerge merge : merges) {
-            ensureLeaves(merge.getClusterLeft(),  nodeMap);
-            ensureLeaves(merge.getClusterRight(), nodeMap);
+            ensureLeaves(merge.getSourceCluster1(),  nodeMap);
+            ensureLeaves(merge.getSourceCluster2(), nodeMap);
         }
 
         // Replay merges in step order, building the tree bottom-up
         DendrogramModel.Node root = null;
         for (HierarchicalClusteringMerge merge : merges) {
-            String leftLabel  = merge.getClusterLeft().getLabel();
-            String rightLabel = merge.getClusterRight().getLabel();
+            String leftLabel  = merge.getSourceCluster1().getLabel();
+            String rightLabel = merge.getSourceCluster2().getLabel();
             String newLabel   = merge.getResult().getLabel();
             double height     = merge.getDistance();
 

@@ -3,6 +3,7 @@ package at.jku.dke.task_app.hierarchical_clustering.data.entities;
 import jakarta.persistence.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -22,6 +23,13 @@ public class HierarchicalClusteringCluster {
     @Column(name = "data_points")
     private List<String> dataPoints;
 
+    public HierarchicalClusteringCluster() {}
+
+    public HierarchicalClusteringCluster(UUID uuid, List<String> dataPoints) {
+        this.id = uuid;
+        setDataPoints(dataPoints);
+    }
+
     public void setId(UUID id) {
         this.id = id;
     }
@@ -31,11 +39,15 @@ public class HierarchicalClusteringCluster {
     }
 
     private void setLabel(List<String> dataPoints) {
-        this.label = "{" + String.join(",", dataPoints) + "}";
+        this.label = String.join(",", dataPoints);
     }
 
     public String getLabel() {
         return label;
+    }
+
+    public String getFullLabel() {
+        return "(" + label + ")";
     }
 
     public void setDataPoints(List<String> dataPoints) {
@@ -45,5 +57,17 @@ public class HierarchicalClusteringCluster {
 
     public List<String> getDataPoints() {
         return dataPoints;
+    }
+
+    // can be used to compare two clusters by their data points
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof HierarchicalClusteringCluster that)) return false;
+        return Objects.equals(dataPoints, that.dataPoints);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(dataPoints);
     }
 }

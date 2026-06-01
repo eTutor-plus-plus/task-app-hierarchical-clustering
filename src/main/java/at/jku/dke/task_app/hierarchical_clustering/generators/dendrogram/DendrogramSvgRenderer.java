@@ -15,13 +15,18 @@ public class DendrogramSvgRenderer {
     private final int marginLeft = 70;
     private final int marginRight = 30;
 
-    private final int leafLabelFontSize = 13;
-    private final int axisFontSize = 11;
+    private final int leafLabelOffset = 5;
+    private final int yAxisTickLength = 5;
+    private final int yAxisLabelGap = 4;
 
-    private final String lineColor = "#2c5f8a";
-    private final String gridColor = "#d0dce8";
+    private final int leafLabelFontSize = 20;
+    private final int axisFontSize = 16;
+    private final int lineWidth = 2;
+
+    private final String lineColor = "#000000";
+    private final String gridColor = "#B7BFC7";
     private final String textColor = "#222222";
-    private final String axisColor = "#555555";
+    private final String axisColor = "#303030";
     private final String backgroundColor = "#ffffff";
 
     public String render(DendrogramModel model) {
@@ -71,13 +76,13 @@ public class DendrogramSvgRenderer {
 
             sb.append(format(
                 "    <line x1=\"%d\" y1=\"%.2f\" x2=\"%d\" y2=\"%.2f\" stroke=\"%s\" stroke-width=\"1\"/>\n",
-                marginLeft - 5, svgY, marginLeft, svgY, axisColor));
+                marginLeft - yAxisTickLength, svgY, marginLeft, svgY, axisColor));
 
             String tickLabel = format("%.1f", gridtick);
 
             sb.append(format(
                 "    <text x=\"%d\" y=\"%.2f\" text-anchor=\"end\" dominant-baseline=\"middle\" font-size=\"%d\" fill=\"%s\">%s</text>\n",
-                marginLeft - 8, svgY, axisFontSize, axisColor, tickLabel));
+                marginLeft - yAxisTickLength - yAxisLabelGap, svgY, axisFontSize, axisColor, tickLabel));
 
             gridtick += gridStep;
         }
@@ -96,8 +101,8 @@ public class DendrogramSvgRenderer {
 
         // --- dendrogram ---
         sb.append(format(
-            "  <g id=\"dendrogram\" stroke=\"%s\" stroke-width=\"2\" fill=\"none\">\n",
-            lineColor));
+            "  <g id=\"dendrogram\" stroke=\"%s\" stroke-width=\"%d\" fill=\"none\">\n",
+            lineColor, lineWidth));
 
         Map<String, Double> nodeX = new HashMap<>(leafX);
         renderNode(root, nodeX, fitMax, plotH, sb);
@@ -107,14 +112,10 @@ public class DendrogramSvgRenderer {
         // --- leaf labels ---
         sb.append("  <g id=\"labels\">\n");
 
-        double leafY = marginTop + plotH + 14;
+        double leafY = marginTop + plotH + leafLabelOffset + leafLabelFontSize * 0.8;
 
         for (String leaf : leaves) {
             double x = leafX.get(leaf);
-
-            sb.append(format(
-                "    <line x1=\"%.2f\" y1=\"%d\" x2=\"%.2f\" y2=\"%d\" stroke=\"%s\" stroke-width=\"1\"/>\n",
-                x, marginTop + plotH, x, marginTop + plotH + 5, axisColor));
 
             sb.append(format(
                 "    <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\" font-size=\"%d\" fill=\"%s\">%s</text>\n",

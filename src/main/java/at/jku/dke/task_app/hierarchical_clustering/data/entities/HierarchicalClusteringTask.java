@@ -32,7 +32,7 @@ public class HierarchicalClusteringTask extends BaseTask {
     private LinkageMethodDto linkageMethod;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "coordinate_list")
+    @Column(name = "coordinate_system")
     private CoordinateSystem coordinateSystem;
 
     @JdbcTypeCode(SqlTypes.JSON)
@@ -49,8 +49,8 @@ public class HierarchicalClusteringTask extends BaseTask {
     private List<HierarchicalClusteringMerge> solutionMergeHistory = new ArrayList<>();
 
     @Convert(converter = DendrogramModelConverter.class)
-    @Column(name = "dendrogram_model", columnDefinition = "jsonb", nullable = false)
     @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "dendrogram_model", columnDefinition = "jsonb", nullable = false)
     private DendrogramModel dendrogramModel;
 
     /**
