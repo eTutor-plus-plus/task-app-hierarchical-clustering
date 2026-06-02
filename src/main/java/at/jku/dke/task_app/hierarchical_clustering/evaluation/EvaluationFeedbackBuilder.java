@@ -355,8 +355,9 @@ public class EvaluationFeedbackBuilder {
             solutionBuilder.append("Distance ").append(distance).append(": ");
 
             List<HierarchicalClusteringMerge> newMerges = mergeEventHistory.get(distance).newMerges();
-            for (HierarchicalClusteringMerge newMerge : newMerges) {
-                solutionBuilder.append(newMerge.getResult().getFullLabel()).append(newMerges.indexOf(newMerge) != newMerges.size() - 1 ? ", " : "");
+            for (int i = 0; i < newMerges.size(); i++) {
+                HierarchicalClusteringMerge newMerge = newMerges.get(i);
+                solutionBuilder.append(newMerge.getResult().getFullLabel()).append(i < newMerges.size() - 1 ? ", " : "");
             }
 
             List<HierarchicalClusteringMerge> inheritedMerges = mergeEventHistory.get(distance).inheritedMerges();

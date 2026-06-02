@@ -59,7 +59,7 @@ public class SyntaxParser {
         try {
             distance = Double.parseDouble(parts[0]);
         } catch (NumberFormatException e) {
-            throwSyntaxError("distance", locale, parts[0], lineNumber);
+            throwSyntaxError("distance", parts[0], lineNumber);
         }
 
         // ordering should be ascending, so new distance has to be equal or higher for correct order
@@ -74,12 +74,13 @@ public class SyntaxParser {
         int i = 0;
         while (i < clusterPart.length()) {
             if (clusterPart.charAt(i) != '(') {
-                throwSyntaxError("openingBracket", locale, lineNumber);
+                throwSyntaxError("openingBracket", lineNumber);
             }
 
             int end = clusterPart.indexOf(')', i);
-            if (end == -1) {
-                throwSyntaxError("closingBracket", locale, lineNumber);
+            int nextClusterStartIndex = clusterPart.indexOf('(', i + 1);
+            if (end == -1 || (nextClusterStartIndex != -1 && nextClusterStartIndex < end)) {
+                throwSyntaxError("closingBracket", lineNumber);
             }
 
             String inside = clusterPart.substring(i + 1, end);
@@ -96,7 +97,7 @@ public class SyntaxParser {
 
             if (i < clusterPart.length()) {
                 if (clusterPart.charAt(i) != ',') {
-                    throwSyntaxError("comma", locale, i, lineNumber);
+                    throwSyntaxError("comma", lineNumber);
                 }
                 i++;
             }
@@ -111,7 +112,7 @@ public class SyntaxParser {
 
     private List<String> parsePoints(String input) {
         if (input.isEmpty()) {
-            throwSyntaxError("emptyCluster", locale, lineNumber);
+            throwSyntaxError("emptyCluster", lineNumber);
         }
 
         String[] parts = input.split(",");
@@ -135,7 +136,7 @@ public class SyntaxParser {
                 for (double key : mergeEvents.keySet()) {
                     // only traverses all new merges of lower distances because inherited merges at lower distances always correspond to an existing new merge
                     if (key < distance && mergeEvents.get(key).newMerges().stream()
-                            .anyMatch(m -> m.getResult().equals(merge.getResult()))) {
+                            .anyMatch(m -> m.getResult().getDataPoints().equals(merge.getResult().getDataPoints()))) {
                         inherited = true;
                         break;
                     }

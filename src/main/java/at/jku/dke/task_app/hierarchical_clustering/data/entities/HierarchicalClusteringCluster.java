@@ -58,16 +58,4 @@ public class HierarchicalClusteringCluster {
     public List<String> getDataPoints() {
         return dataPoints;
     }
-
-    // can be used to compare two clusters by their data points
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof HierarchicalClusteringCluster that)) return false;
-        return Objects.equals(dataPoints, that.dataPoints);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(dataPoints);
-    }
 }

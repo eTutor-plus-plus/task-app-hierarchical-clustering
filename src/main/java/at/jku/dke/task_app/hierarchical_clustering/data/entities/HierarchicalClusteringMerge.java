@@ -108,19 +108,4 @@ public class HierarchicalClusteringMerge {
     public String toString() {
         return "Distance " + distance + ": " + result.getFullLabel();
     }
-
-    // can not be used to compare an input merge and a solution merge because source clusters will not be equal
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof HierarchicalClusteringMerge merge)) return false;
-        return Double.compare(distance, merge.distance) == 0 &&
-            sourceCluster1.equals(merge.sourceCluster1) &&
-            sourceCluster2.equals(merge.sourceCluster2) &&
-            result.equals(merge.result);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(sourceCluster1, sourceCluster2, result, distance, step);
-    }
 }

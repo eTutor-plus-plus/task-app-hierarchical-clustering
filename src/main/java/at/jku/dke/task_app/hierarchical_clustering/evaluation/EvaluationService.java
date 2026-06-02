@@ -158,15 +158,15 @@ public class EvaluationService {
                 inputMerges.addAll(inputMergeEvents.get(distance).inheritedMerges);
 
                 for (HierarchicalClusteringMerge inputMerge : inputMerges) {
-                    if (solutionMerges.stream().anyMatch(m -> m.getResult().equals(inputMerge.getResult()))) {
+                    if (solutionMerges.stream().anyMatch(m -> m.getResult().getDataPoints().equals(inputMerge.getResult().getDataPoints()))) {
                         if (foundSolutionMerges.get(distance) != null &&
                             foundSolutionMerges.get(distance).stream()
-                                .anyMatch(m -> m.getResult().equals(inputMerge.getResult()))) {
+                                .anyMatch(m -> m.getResult().getDataPoints().equals(inputMerge.getResult().getDataPoints()))) {
                             correct = false; // TODO: decide whether superfluous/redundant clusters should count as wrong when rest of distance is correct
                             redundantMerges.computeIfAbsent(distance, k -> new ArrayList<>()).add(inputMerge);
                         } else {
                             HierarchicalClusteringMerge solutionMerge = solutionMerges.stream()
-                                .filter(m -> m.getResult().equals(inputMerge.getResult()))
+                                .filter(m -> m.getResult().getDataPoints().equals(inputMerge.getResult().getDataPoints()))
                                 .findFirst().orElse(null);
                             foundSolutionMerges.computeIfAbsent(distance, k -> new ArrayList<>()).add(solutionMerge);
                         }
@@ -205,9 +205,9 @@ public class EvaluationService {
                     // add all clusters/merges that are still missing after considering found and partially found solutions
                     for (HierarchicalClusteringMerge merge : solutionMerges) {
                         if ((foundSolutionMerges.get(distance) == null || (foundSolutionMerges.get(distance) != null &&
-                                foundSolutionMerges.get(distance).stream().noneMatch(m -> m != null && m.equals(merge)))) &&
+                                foundSolutionMerges.get(distance).stream().noneMatch(m -> m != null && m.getResult().getDataPoints().equals(merge.getResult().getDataPoints())))) &&
                             (partiallyFoundSolutionMerges.get(distance) == null || (partiallyFoundSolutionMerges.get(distance) != null &&
-                                partiallyFoundSolutionMerges.get(distance).stream().noneMatch(m -> m != null && m.equals(merge))))) {
+                                partiallyFoundSolutionMerges.get(distance).stream().noneMatch(m -> m != null && m.getResult().getDataPoints().equals(merge.getResult().getDataPoints()))))) {
                             correct = false;
                             missingMerges.computeIfAbsent(distance, k -> new ArrayList<>()).add(merge);
                         }
