@@ -4,6 +4,7 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMatrix;
 import at.jku.dke.task_app.hierarchical_clustering.validation.ValidCoordinateSystem;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.io.Serializable;
@@ -17,9 +18,9 @@ import java.math.BigDecimal;
 public record ModifyHierarchicalClusteringTaskDto(
     @NotNull AssignmentTypeDto assignmentType,
     DistanceMetric distanceMetric,
-    @NotNull @PositiveOrZero Integer nDataPoints,
+    @NotNull @Positive Integer nDataPoints,
     @NotNull LinkageMethodDto linkageMethod,
-    @NotNull @PositiveOrZero BigDecimal pointsPerCorrectCluster,
+    @NotNull @Positive BigDecimal pointsPerCorrectCluster,
     @PositiveOrZero BigDecimal wrongOrderPenalty,
     @ValidCoordinateSystem HierarchicalClusteringTask.CoordinateSystem coordinateSystem,
     @ValidMatrix HierarchicalClusteringTask.DistanceMatrix distanceMatrix) implements Serializable {

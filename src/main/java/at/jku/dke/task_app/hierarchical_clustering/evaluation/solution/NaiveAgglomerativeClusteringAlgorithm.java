@@ -34,6 +34,8 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
         for (int step = 1; step < n; step++) {
             int size = clusters.size();
 
+            checkForTiebreaker(workingMatrix);
+
             // 1. Find the closest pair of clusters
             double minDist = Double.MAX_VALUE;
             int clusterA = -1, clusterB = -1;
@@ -94,5 +96,34 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
         }
 
         return result;
+    }
+
+    private void checkForTiebreaker(double[][] workingMatrix) {
+        int size = workingMatrix.length;
+
+        // Find minimum distance
+        double minDist = Double.MAX_VALUE;
+        for (int i = 0; i < size; i++) {
+            for (int j = i + 1; j < size; j++) {
+                minDist = Math.min(minDist, workingMatrix[i][j]);
+            }
+        }
+
+        // Check whether any cluster appears twice among minimum-distance pairs
+        boolean[] seen = new boolean[size];
+
+        for (int i = 0; i < size; i++) {
+            for (int j = i + 1; j < size; j++) {
+                if (Double.compare(workingMatrix[i][j], minDist) == 0) {
+                    if (seen[i] || seen[j]) {
+                        throw new IllegalStateException(
+                            "Solution for current Matrix leads to Tiebreaker! Consider changing or re-arranging duplicate distances."
+                        );
+                    }
+                    seen[i] = true;
+                    seen[j] = true;
+                }
+            }
+        }
     }
 }

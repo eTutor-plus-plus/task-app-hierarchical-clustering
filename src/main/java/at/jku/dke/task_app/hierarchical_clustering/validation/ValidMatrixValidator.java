@@ -33,8 +33,6 @@ public class ValidMatrixValidator implements ConstraintValidator<ValidMatrix, Hi
             }
         }
 
-        Set<Double> distinctDistances = new HashSet<>();
-
         for (int i = 0; i < distances.length; i++) {
             // diagonal check
             if (distances[i][i] != 0) {
@@ -52,12 +50,6 @@ public class ValidMatrixValidator implements ConstraintValidator<ValidMatrix, Hi
                 // valid distances check (need only check lower triangle because symmetry has been established by the previous check)
                 if (distances[i][j] <= 0.0) {
                     putMessage(context, "negatives", new Object[]{List.of(value.getLabels().get(i), value.getLabels().get(j))});
-                    return false;
-                }
-
-                // distinct distances check (checks only lower triangle if distance is not 0 or negative)
-                if (!distinctDistances.add(distances[i][j])) {
-                    putMessage(context, "duplicates", new Object[]{List.of(value.getLabels().get(i), value.getLabels().get(j))});
                     return false;
                 }
             }
