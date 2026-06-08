@@ -84,3 +84,48 @@ management:
           - metrics
           - livenessstate
           - readinessstate
+
+# Custom parameter config
+app:
+  # Configs matrix generation step and for both coordinate generators separately
+  generation:
+    matrix:
+      step: 0.5
+
+    coordinates:
+      euclidean:
+        restarts: 50
+        max-attempts-per-point: 200_000
+      manhattan:
+        restarts: 50
+        max-attempts-per-point: 200_000
+
+  # Dendrogram layout and style
+  dendrogram:
+    canvas:
+      width: 900
+      height: 600
+      margin:
+        top: 40
+        bottom: 60
+        left: 70
+        right: 30
+
+    labels:
+      leaf:
+        font-size: 20
+        offset: 5
+      axis:
+        font-size: 16
+        tick-length: 5
+        label-gap: 4
+
+    lines:
+      width: 2
+
+    colors:
+      label: "#222222"
+      axis: "#303030"
+      grid: "#B7BFC7"
+      line: "#000000"
+      background: "#ffffff"

@@ -3,12 +3,12 @@ package at.jku.dke.task_app.hierarchical_clustering.generators;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
 import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetric;
 import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMatrix;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 public class DistanceMatrixGenerator implements Generator<HierarchicalClusteringTask.DistanceMatrix> {
-
-    private static final double STEP = 0.5;
 
 	public HierarchicalClusteringTask.DistanceMatrix generate(int nDataPoints, Random random) {
 		if (nDataPoints <= 0) throw new IllegalArgumentException("n must be > 0");
@@ -23,7 +23,7 @@ public class DistanceMatrixGenerator implements Generator<HierarchicalClustering
 		int poolSize = (int) Math.ceil(nPairs * expansionFactor);
 		List<Double> pool = new ArrayList<>(poolSize);
 		for (int i = 1; i <= poolSize; i++) {
-			pool.add(i * STEP);
+			pool.add(i * Config.step);
 		}
 
 		// shuffle pool (to randomize positions of values in the matrix)
@@ -67,5 +67,15 @@ public class DistanceMatrixGenerator implements Generator<HierarchicalClustering
         }
 
         return new HierarchicalClusteringTask.DistanceMatrix(labels, matrix);
+    }
+
+    @Component
+    static class Config {
+        static double step;
+
+        @Value("${app.generation.matrix.step}")
+        public void setStep(double step) {
+            Config.step = step;
+        }
     }
 }

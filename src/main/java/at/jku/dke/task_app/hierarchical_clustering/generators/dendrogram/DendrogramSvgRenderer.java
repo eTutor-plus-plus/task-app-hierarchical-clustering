@@ -1,5 +1,8 @@
 package at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -7,41 +10,19 @@ import java.util.Map;
 
 public class DendrogramSvgRenderer {
 
-    // ---- layout constants (pixels) - not local variables for potential dynamic tuning feature ----
-    private final int canvasWidth = 900;
-    private final int canvasHeight = 600;
-    private final int marginTop = 40;
-    private final int marginBottom = 60;
-    private final int marginLeft = 70;
-    private final int marginRight = 30;
-
-    private final int leafLabelOffset = 5;
-    private final int yAxisTickLength = 5;
-    private final int yAxisLabelGap = 4;
-
-    private final int leafLabelFontSize = 20;
-    private final int axisFontSize = 16;
-    private final int lineWidth = 2;
-
-    private final String lineColor = "#000000";
-    private final String gridColor = "#B7BFC7";
-    private final String textColor = "#222222";
-    private final String axisColor = "#303030";
-    private final String backgroundColor = "#ffffff";
-
     public String render(DendrogramModel model) {
         List<String> leaves = model.getLeafOrder();
         DendrogramModel.Node root = model.getRoot();
         int n = leaves.size();
 
-        int plotW = canvasWidth - marginLeft - marginRight;
-        int plotH = canvasHeight - marginTop - marginBottom;
+        int plotW = Config.canvasWidth - Config.marginLeft - Config.marginRight;
+        int plotH = Config.canvasHeight - Config.marginTop - Config.marginBottom;
 
         double colW = (double) plotW / n;
 
         Map<String, Double> leafX = new HashMap<>();
         for (int i = 0; i < n; i++) {
-            leafX.put(leaves.get(i), marginLeft + colW * i + colW / 2.0);
+            leafX.put(leaves.get(i), Config.marginLeft + colW * i + colW / 2.0);
         }
 
         double maxHeight = root.getHeight();
@@ -54,12 +35,12 @@ public class DendrogramSvgRenderer {
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         sb.append(format(
             "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">\n",
-            canvasWidth, canvasHeight, canvasWidth, canvasHeight));
+            Config.canvasWidth, Config.canvasHeight, Config.canvasWidth, Config.canvasHeight));
 
         // background
         sb.append(format(
             "  <rect width=\"%d\" height=\"%d\" fill=\"%s\"/>\n",
-            canvasWidth, canvasHeight, backgroundColor));
+            Config.canvasWidth, Config.canvasHeight, Config.backgroundColor));
 
         // --- grid ---
         sb.append("  <g id=\"grid\">\n");
@@ -72,17 +53,17 @@ public class DendrogramSvgRenderer {
 
             sb.append(format(
                 "    <line x1=\"%d\" y1=\"%.2f\" x2=\"%d\" y2=\"%.2f\" stroke=\"%s\" stroke-width=\"1\" stroke-dasharray=\"4,3\"/>\n",
-                marginLeft, svgY, marginLeft + plotW, svgY, gridColor));
+                Config.marginLeft, svgY, Config.marginLeft + plotW, svgY, Config.gridColor));
 
             sb.append(format(
                 "    <line x1=\"%d\" y1=\"%.2f\" x2=\"%d\" y2=\"%.2f\" stroke=\"%s\" stroke-width=\"1\"/>\n",
-                marginLeft - yAxisTickLength, svgY, marginLeft, svgY, axisColor));
+                Config.marginLeft - Config.yAxisTickLength, svgY, Config.marginLeft, svgY, Config.axisColor));
 
             String tickLabel = format("%.1f", gridtick);
 
             sb.append(format(
                 "    <text x=\"%d\" y=\"%.2f\" text-anchor=\"end\" dominant-baseline=\"middle\" font-size=\"%d\" fill=\"%s\">%s</text>\n",
-                marginLeft - yAxisTickLength - yAxisLabelGap, svgY, axisFontSize, axisColor, tickLabel));
+                Config.marginLeft - Config.yAxisTickLength - Config.yAxisLabelGap, svgY, Config.axisFontSize, Config.axisColor, tickLabel));
 
             gridtick += gridStep;
         }
@@ -92,17 +73,12 @@ public class DendrogramSvgRenderer {
         // y-axis
         sb.append(format(
             "  <line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"%s\" stroke-width=\"1.5\"/>\n",
-            marginLeft, marginTop, marginLeft, marginTop + plotH, axisColor));
-
-        // vertical "Distance / Height" text (to be deleted)
-//        sb.append(format(
-//            "  <text transform=\"rotate(-90)\" x=\"%d\" y=\"%d\" text-anchor=\"middle\" font-size=\"%d\" fill=\"%s\">Distance / Height</text>\n",
-//            -(marginTop + plotH / 2), marginLeft - 45, axisFontSize + 1, axisColor));
+            Config.marginLeft, Config.marginTop, Config.marginLeft, Config.marginTop + plotH, Config.axisColor));
 
         // --- dendrogram ---
         sb.append(format(
             "  <g id=\"dendrogram\" stroke=\"%s\" stroke-width=\"%d\" fill=\"none\">\n",
-            lineColor, lineWidth));
+            Config.lineColor, Config.lineWidth));
 
         Map<String, Double> nodeX = new HashMap<>(leafX);
         renderNode(root, nodeX, fitMax, plotH, sb);
@@ -112,14 +88,14 @@ public class DendrogramSvgRenderer {
         // --- leaf labels ---
         sb.append("  <g id=\"labels\">\n");
 
-        double leafY = marginTop + plotH + leafLabelOffset + leafLabelFontSize * 0.8;
+        double leafY = Config.marginTop + plotH + Config.leafLabelOffset + Config.leafLabelFontSize * 0.8;
 
         for (String leaf : leaves) {
             double x = leafX.get(leaf);
 
             sb.append(format(
                 "    <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\" font-size=\"%d\" fill=\"%s\">%s</text>\n",
-                x, leafY, leafLabelFontSize, textColor, escapeXml(leaf)));
+                x, leafY, Config.leafLabelFontSize, Config.textColor, escapeXml(leaf)));
         }
 
         sb.append("  </g>\n");
@@ -127,7 +103,7 @@ public class DendrogramSvgRenderer {
         // x-axis
         sb.append(format(
             "  <line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"%s\" stroke-width=\"1.5\"/>\n",
-            marginLeft, marginTop + plotH, marginLeft + plotW, marginTop + plotH, axisColor));
+            Config.marginLeft, Config.marginTop + plotH, Config.marginLeft + plotW, Config.marginTop + plotH, Config.axisColor));
 
         sb.append("</svg>");
 
@@ -163,7 +139,7 @@ public class DendrogramSvgRenderer {
     }
 
     private double heightToSvgY(double height, double niceMax, int plotH) {
-        return marginTop + plotH * (1.0 - height / niceMax);
+        return Config.marginTop + plotH * (1.0 - height / niceMax);
     }
 
     static double tickStep(double maxHeight) {
@@ -188,5 +164,118 @@ public class DendrogramSvgRenderer {
 
     private static String format(String format, Object... args) {
         return String.format(Locale.ENGLISH, format, args);
+    }
+
+    @Component
+    static class Config {
+        // canvas
+        private static int canvasWidth;
+        private static int canvasHeight;
+        private static int marginTop;
+        private static int marginBottom;
+        private static int marginLeft;
+        private static int marginRight;
+
+        // label gaps to axis
+        private static int leafLabelOffset;
+        private static int yAxisTickLength;
+        private static int yAxisLabelGap;
+
+        // font/line size
+        private static int leafLabelFontSize;
+        private static int axisFontSize;
+        private static int lineWidth;
+
+        // colors
+        private static String lineColor;
+        private static String gridColor;
+        private static String textColor;
+        private static String axisColor;
+        private static String backgroundColor;
+
+        @Value("${app.dendrogram.canvas.width}")
+        public void setCanvasWidth(int canvasWidth) {
+            Config.canvasWidth = canvasWidth;
+        }
+
+        @Value("${app.dendrogram.canvas.height}")
+        public void setCanvasHeight(int canvasHeight) {
+            Config.canvasHeight = canvasHeight;
+        }
+
+        @Value("${app.dendrogram.canvas.margin.top}")
+        public void setMarginTop(int marginTop) {
+            Config.marginTop = marginTop;
+        }
+
+        @Value("${app.dendrogram.canvas.margin.bottom}")
+        public void setMarginBottom(int marginBottom) {
+            Config.marginBottom = marginBottom;
+        }
+
+        @Value("${app.dendrogram.canvas.margin.left}")
+        public void setMarginLeft(int marginLeft) {
+            Config.marginLeft = marginLeft;
+        }
+
+        @Value("${app.dendrogram.canvas.margin.right}")
+        public void setMarginRight(int marginRight) {
+            Config.marginRight = marginRight;
+        }
+
+        @Value("${app.dendrogram.labels.leaf.offset}")
+        public void setLeafLabelOffset(int leafLabelOffset) {
+            Config.leafLabelOffset = leafLabelOffset;
+        }
+
+        @Value("${app.dendrogram.labels.axis.tick-length}")
+        public void setyAxisTickLength(int yAxisTickLength) {
+            Config.yAxisTickLength = yAxisTickLength;
+        }
+
+        @Value("${app.dendrogram.labels.axis.label-gap}")
+        public void setyAxisLabelGap(int yAxisLabelGap) {
+            Config.yAxisLabelGap = yAxisLabelGap;
+        }
+
+        @Value("${app.dendrogram.labels.leaf.font-size}")
+        public void setLeafLabelFontSize(int leafLabelFontSize) {
+            Config.leafLabelFontSize = leafLabelFontSize;
+        }
+
+        @Value("${app.dendrogram.labels.axis.font-size}")
+        public void setAxisFontSize(int axisFontSize) {
+            Config.axisFontSize = axisFontSize;
+        }
+
+        @Value("${app.dendrogram.lines.width}")
+        public void setLineWidth(int lineWidth) {
+            Config.lineWidth = lineWidth;
+        }
+
+        @Value("${app.dendrogram.colors.line}")
+        public void setLineColor(String lineColor) {
+            Config.lineColor = lineColor;
+        }
+
+        @Value("${app.dendrogram.colors.grid}")
+        public void setGridColor(String gridColor) {
+            Config.gridColor = gridColor;
+        }
+
+        @Value("${app.dendrogram.colors.label}")
+        public void setTextColor(String textColor) {
+            Config.textColor = textColor;
+        }
+
+        @Value("${app.dendrogram.colors.axis}")
+        public void setAxisColor(String axisColor) {
+            Config.axisColor = axisColor;
+        }
+
+        @Value("${app.dendrogram.colors.background}")
+        public void setBackgroundColor(String backgroundColor) {
+            Config.backgroundColor = backgroundColor;
+        }
     }
 }

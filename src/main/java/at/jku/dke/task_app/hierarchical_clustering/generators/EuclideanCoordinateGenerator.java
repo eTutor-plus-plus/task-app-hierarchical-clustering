@@ -1,13 +1,12 @@
 package at.jku.dke.task_app.hierarchical_clustering.generators;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 public class EuclideanCoordinateGenerator extends CoordinateGenerator {
-
-    private static final int maxAttemptsPerPoint = 200_000;
-    private static final int maxRestarts = 50;
 
     @Override
     public List<HierarchicalClusteringTask.CoordinatePoint> generate(int n, double minX, double maxX, double minY, double maxY, Random random) {
@@ -28,7 +27,7 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
             );
         }
 
-        for (int restart = 0; restart <= maxRestarts; restart++) {
+        for (int restart = 0; restart <= Config.maxRestarts; restart++) {
             List<HierarchicalClusteringTask.CoordinatePoint> result    = new ArrayList<>();
             List<int[]> placed = new ArrayList<>();
             Set<Double> usedDists = new HashSet<>();
@@ -48,7 +47,7 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
 
                 Iterator<int[]> it = remaining.iterator();
 
-                while (it.hasNext() && attempts < maxAttemptsPerPoint) {
+                while (it.hasNext() && attempts < Config.maxAttemptsPerPoint) {
                     int[] cand = it.next();
                     attempts++;
 
@@ -89,7 +88,7 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
 
         throw new RuntimeException(
             "Could not generate " + n + " points satisfying all constraints after " +
-                maxRestarts + " restarts. Try a larger grid or fewer points."
+                Config.maxRestarts + " restarts. Try a larger grid or fewer points."
         );
     }
 
@@ -157,5 +156,21 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
         }
 
         return dists;
+    }
+
+    @Component
+    static class Config {
+        private static int maxRestarts;
+        private static int maxAttemptsPerPoint;
+
+        @Value("${app.generation.coordinates.euclidean.restarts}")
+        public void setMaxRestarts(int maxRestarts) {
+            Config.maxRestarts = maxRestarts;
+        }
+
+        @Value("${app.generation.coordinates.euclidean.max-attempts-per-point}")
+        public void setMaxAttemptsPerPoint(int maxAttemptsPerPoint) {
+            Config.maxAttemptsPerPoint = maxAttemptsPerPoint;
+        }
     }
 }
