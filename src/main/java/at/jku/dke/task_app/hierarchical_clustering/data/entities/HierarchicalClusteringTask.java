@@ -2,7 +2,6 @@ package at.jku.dke.task_app.hierarchical_clustering.data.entities;
 
 import at.jku.dke.etutor.task_app.data.entities.BaseTask;
 import at.jku.dke.etutor.task_app.dto.TaskStatus;
-import at.jku.dke.task_app.hierarchical_clustering.data.converters.DendrogramModelConverter;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.DistanceMetricConverter;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.LinkageMethodConverter;
 import at.jku.dke.task_app.hierarchical_clustering.generators.matrix.DistanceMetric;
@@ -48,7 +47,6 @@ public class HierarchicalClusteringTask extends BaseTask {
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HierarchicalClusteringMerge> solutionMergeHistory = new ArrayList<>();
 
-    @Convert(converter = DendrogramModelConverter.class)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "dendrogram_model", columnDefinition = "jsonb", nullable = false)
     private DendrogramModel dendrogramModel;
