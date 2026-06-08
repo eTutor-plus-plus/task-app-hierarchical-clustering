@@ -4,8 +4,8 @@ import at.jku.dke.etutor.task_app.dto.CriterionDto;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringCluster;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
-import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramImageExporter;
-import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramSvgRenderer;
+import at.jku.dke.task_app.hierarchical_clustering.dendrogram.DendrogramImageExporter;
+import at.jku.dke.task_app.hierarchical_clustering.dendrogram.DendrogramSvgRenderer;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 

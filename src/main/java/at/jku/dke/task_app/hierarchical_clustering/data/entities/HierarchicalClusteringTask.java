@@ -5,9 +5,9 @@ import at.jku.dke.etutor.task_app.dto.TaskStatus;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.DendrogramModelConverter;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.DistanceMetricConverter;
 import at.jku.dke.task_app.hierarchical_clustering.data.converters.LinkageMethodConverter;
-import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetric;
-import at.jku.dke.task_app.hierarchical_clustering.dto.LinkageMethodDto;
-import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramModel;
+import at.jku.dke.task_app.hierarchical_clustering.generators.matrix.DistanceMetric;
+import at.jku.dke.task_app.hierarchical_clustering.clustering.LinkageMethod;
+import at.jku.dke.task_app.hierarchical_clustering.dendrogram.DendrogramModel;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -29,7 +29,7 @@ public class HierarchicalClusteringTask extends BaseTask {
 
     @Convert(converter = LinkageMethodConverter.class)
     @Column(name = "linkage", columnDefinition = "linkage_method not null default 'single'", nullable = false)
-    private LinkageMethodDto linkageMethod;
+    private LinkageMethod linkageMethod;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "coordinate_system")
@@ -104,11 +104,11 @@ public class HierarchicalClusteringTask extends BaseTask {
         this.distanceMetric = distanceMetric;
     }
 
-    public LinkageMethodDto getLinkageMethod() {
+    public LinkageMethod getLinkageMethod() {
         return linkageMethod;
     }
 
-    public void setLinkageMethod(LinkageMethodDto linkageMethod) {
+    public void setLinkageMethod(LinkageMethod linkageMethod) {
         this.linkageMethod = linkageMethod;
     }
 

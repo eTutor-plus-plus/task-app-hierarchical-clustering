@@ -1,13 +1,13 @@
-package at.jku.dke.task_app.hierarchical_clustering.evaluation.solution;
+package at.jku.dke.task_app.hierarchical_clustering.clustering;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringCluster;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 
 import java.util.*;
 
-public class HierarchicalClusteringSolutionFormatter {
+public class SolutionFormatter {
 
-    private HierarchicalClusteringSolutionFormatter() {}
+    private SolutionFormatter() {}
 
     public static HierarchicalClusteringCluster mergeCluster(HierarchicalClusteringCluster left, HierarchicalClusteringCluster right) {
         List<String> combined = new ArrayList<>();

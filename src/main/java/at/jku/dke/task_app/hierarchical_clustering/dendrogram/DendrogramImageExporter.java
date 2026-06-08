@@ -1,4 +1,4 @@
-package at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram;
+package at.jku.dke.task_app.hierarchical_clustering.dendrogram;
 
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;

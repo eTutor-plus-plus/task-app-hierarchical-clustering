@@ -1,6 +1,6 @@
 package at.jku.dke.task_app.hierarchical_clustering.data.converters;
 
-import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetric;
+import at.jku.dke.task_app.hierarchical_clustering.generators.matrix.DistanceMetric;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

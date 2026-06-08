@@ -1,4 +1,4 @@
-package at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram;
+package at.jku.dke.task_app.hierarchical_clustering.dendrogram;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringCluster;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;

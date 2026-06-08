@@ -1,4 +1,4 @@
-package at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram;
+package at.jku.dke.task_app.hierarchical_clustering.dendrogram;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;

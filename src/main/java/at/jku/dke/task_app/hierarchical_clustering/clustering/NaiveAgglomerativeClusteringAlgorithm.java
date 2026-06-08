@@ -1,4 +1,4 @@
-package at.jku.dke.task_app.hierarchical_clustering.evaluation.solution;
+package at.jku.dke.task_app.hierarchical_clustering.clustering;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
@@ -29,7 +29,7 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
             clusters.add(singleton);
         }
 
-        List<HierarchicalClusteringSolutionFormatter.RawMerge> rawMerges = new ArrayList<>(n - 1);
+        List<SolutionFormatter.RawMerge> rawMerges = new ArrayList<>(n - 1);
 
         for (int step = 1; step < n; step++) {
             int size = clusters.size();
@@ -53,7 +53,7 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
             // 2. Record the raw merge
             List<String> leftLabels  = indicesToLabels(clusters.get(clusterA), input.getLabels());
             List<String> rightLabels = indicesToLabels(clusters.get(clusterB), input.getLabels());
-            rawMerges.add(new HierarchicalClusteringSolutionFormatter.RawMerge(
+            rawMerges.add(new SolutionFormatter.RawMerge(
                 leftLabels, rightLabels, minDist, step));
 
             // 3. Merge cluster B into A (member indices)
@@ -75,7 +75,7 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
             workingMatrix = newDist;
         }
 
-        return HierarchicalClusteringSolutionFormatter.format(rawMerges);
+        return SolutionFormatter.format(rawMerges);
     }
 
     private double[][] deepCopy(double[][] sourceMatrix, int n) {

@@ -1,22 +1,15 @@
 package at.jku.dke.task_app.hierarchical_clustering.controllers;
 
 import at.jku.dke.etutor.task_app.controllers.BaseTaskController;
-import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
 import at.jku.dke.task_app.hierarchical_clustering.dto.AssignmentTypeDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.HierarchicalClusteringTaskDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.ModifyHierarchicalClusteringTaskDto;
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.EvaluationFeedbackBuilder;
-import at.jku.dke.task_app.hierarchical_clustering.evaluation.EvaluationService;
-import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramImageExporter;
-import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramSvgRenderer;
+import at.jku.dke.task_app.hierarchical_clustering.dendrogram.DendrogramImageExporter;
+import at.jku.dke.task_app.hierarchical_clustering.dendrogram.DendrogramSvgRenderer;
 import at.jku.dke.task_app.hierarchical_clustering.services.HierarchicalClusteringTaskService;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * Controller for managing {@link HierarchicalClusteringTask}s.

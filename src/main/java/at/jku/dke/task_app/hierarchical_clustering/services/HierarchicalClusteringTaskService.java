@@ -10,13 +10,14 @@ import at.jku.dke.task_app.hierarchical_clustering.data.repositories.Hierarchica
 import at.jku.dke.task_app.hierarchical_clustering.data.repositories.HierarchicalClusteringMergeRepository;
 import at.jku.dke.task_app.hierarchical_clustering.data.repositories.HierarchicalClusteringTaskRepository;
 import at.jku.dke.task_app.hierarchical_clustering.dto.AssignmentTypeDto;
-import at.jku.dke.task_app.hierarchical_clustering.dto.DistanceMetric;
+import at.jku.dke.task_app.hierarchical_clustering.generators.matrix.DistanceMetric;
 import at.jku.dke.task_app.hierarchical_clustering.dto.ModifyHierarchicalClusteringTaskDto;
-import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.LinkageMethod;
-import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.LinkageMethods;
-import at.jku.dke.task_app.hierarchical_clustering.evaluation.solution.NaiveAgglomerativeClusteringAlgorithm;
-import at.jku.dke.task_app.hierarchical_clustering.generators.*;
-import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramModelBuilder;
+import at.jku.dke.task_app.hierarchical_clustering.clustering.NaiveAgglomerativeClusteringAlgorithm;
+import at.jku.dke.task_app.hierarchical_clustering.dendrogram.DendrogramModelBuilder;
+import at.jku.dke.task_app.hierarchical_clustering.generators.coordinates.CoordinateGenerator;
+import at.jku.dke.task_app.hierarchical_clustering.generators.coordinates.EuclideanCoordinateGenerator;
+import at.jku.dke.task_app.hierarchical_clustering.generators.coordinates.ManhattanCoordinateGenerator;
+import at.jku.dke.task_app.hierarchical_clustering.generators.matrix.DistanceMatrixGenerator;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -93,7 +94,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             task.setDistanceMatrix(modifyTaskDto.additionalData().distanceMatrix());
         }
 
-        // delete all old clusters and merges for this task (as they are not needed anymore) and compute and persist the new solution
+        // delete all old clusters and merges for this task (as they are not needed anymore) and compute and persist the new clustering
         List<HierarchicalClusteringMerge> oldSolution = task.getSolutionMergeHistory();
         Map<List<String>, HierarchicalClusteringCluster> clusterLookup = new HashMap<>();
 
@@ -138,7 +139,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
 
     private String getTaskDescription(HierarchicalClusteringTask task, Locale locale) {
         String algorithm = this.messageSource.getMessage("description.agglomerative", null, locale);
-        String linkageMethod = this.messageSource.getMessage(task.getLinkageMethod().getTranslationKey(), null, locale);
+        String linkageMethod = this.messageSource.getMessage("description." + task.getLinkageMethod().toString().toLowerCase(), null, locale);
         String taskType;
         String ordering;
 
@@ -225,12 +226,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
     }
 
     private void createSolution(HierarchicalClusteringTask task) {
-        LinkageMethod linkageMethod = switch (task.getLinkageMethod()) {
-            case SINGLE -> LinkageMethods.SINGLE;
-            case COMPLETE -> LinkageMethods.COMPLETE;
-        };
-
-        List<HierarchicalClusteringMerge> solutionMergeHistory = new NaiveAgglomerativeClusteringAlgorithm(linkageMethod).cluster(task.getDistanceMatrix());
+        List<HierarchicalClusteringMerge> solutionMergeHistory = new NaiveAgglomerativeClusteringAlgorithm(task.getLinkageMethod()).cluster(task.getDistanceMatrix());
 
         // persist clusters and merges
         for (HierarchicalClusteringMerge merge : solutionMergeHistory) {

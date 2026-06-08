@@ -1,6 +1,7 @@
-package at.jku.dke.task_app.hierarchical_clustering.generators;
+package at.jku.dke.task_app.hierarchical_clustering.generators.coordinates;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
+import at.jku.dke.task_app.hierarchical_clustering.generators.Generator;
 
 import java.util.ArrayList;
 import java.util.List;

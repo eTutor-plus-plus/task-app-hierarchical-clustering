@@ -1,6 +1,6 @@
 package at.jku.dke.task_app.hierarchical_clustering.data.converters;
 
-import at.jku.dke.task_app.hierarchical_clustering.generators.dendrogram.DendrogramModel;
+import at.jku.dke.task_app.hierarchical_clustering.dendrogram.DendrogramModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
