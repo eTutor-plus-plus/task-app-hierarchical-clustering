@@ -85,8 +85,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         } else if (modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.COORDINATES) {
             DistanceMetric metric = modifyTaskDto.additionalData().distanceMetric();
 
-            HierarchicalClusteringTask.DistanceMatrix distanceMatrix = new DistanceMatrixGenerator()
-                .calculateMatrixFromCoordinates(modifyTaskDto.additionalData().coordinateSystem().getCoordinateList(), metric);
+            HierarchicalClusteringTask.DistanceMatrix distanceMatrix = new DistanceMatrixGenerator().calculateMatrixFromCoordinates(modifyTaskDto.additionalData().coordinateSystem().getCoordinateList(), metric);
             task.setCoordinateSystem(modifyTaskDto.additionalData().coordinateSystem());
             task.setDistanceMetric(modifyTaskDto.additionalData().distanceMetric());
             task.setDistanceMatrix(distanceMatrix);
@@ -131,8 +130,15 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
 
     @Override
     protected TaskModificationResponseDto mapToReturnData(HierarchicalClusteringTask task, boolean create) {
-        String algorithm = this.messageSource.getMessage("description.agglomerative", null, Locale.ENGLISH);
-        String linkageMethod = this.messageSource.getMessage(task.getLinkageMethod().getTranslationKey(), null, Locale.ENGLISH);
+        String descriptionDe = getTaskDescription(task, Locale.GERMAN);
+        String descriptionEn = getTaskDescription(task, Locale.ENGLISH);
+
+        return new TaskModificationResponseDto(descriptionDe, descriptionEn);
+    }
+
+    private String getTaskDescription(HierarchicalClusteringTask task, Locale locale) {
+        String algorithm = this.messageSource.getMessage("description.agglomerative", null, locale);
+        String linkageMethod = this.messageSource.getMessage(task.getLinkageMethod().getTranslationKey(), null, locale);
         String taskType;
         String ordering;
 
@@ -141,24 +147,21 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             taskType = this.messageSource.getMessage(
                 "description.coordinates",
                 new Object[]{
-                    this.messageSource.getMessage("description." + task.getDistanceMetric().toString().toLowerCase(), null, Locale.ENGLISH),
+                    this.messageSource.getMessage("description." + task.getDistanceMetric().toString().toLowerCase(), null, locale),
                     coordinatesTableHtml},
-                Locale.ENGLISH);
+                locale);
         } else {
             String matrixHtml = getMatrixAsHtmlTable(task.getDistanceMatrix());
-            taskType = this.messageSource.getMessage("description.matrix", new Object[]{matrixHtml}, Locale.ENGLISH);
+            taskType = this.messageSource.getMessage("description.matrix", new Object[]{matrixHtml}, locale);
         }
 
         ordering = task.getWrongOrderPenalty() != null && task.getWrongOrderPenalty().compareTo(BigDecimal.ZERO) > 0 ?
-            this.messageSource.getMessage("description.ordering", null, Locale.ENGLISH) :
+            this.messageSource.getMessage("description.ordering", null, locale) :
             "";
 
         Object[] args = { algorithm, linkageMethod, taskType, ordering };
 
-        return new TaskModificationResponseDto(
-            this.messageSource.getMessage("defaultTaskDescription", null, Locale.GERMAN),
-            this.messageSource.getMessage("description.general", args, Locale.ENGLISH)
-        );
+        return this.messageSource.getMessage("description.general", args, locale);
     }
 
     private void validateAdditional(ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {

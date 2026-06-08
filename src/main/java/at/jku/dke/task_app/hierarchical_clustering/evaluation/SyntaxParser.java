@@ -134,7 +134,7 @@ public class SyntaxParser {
                 boolean inherited = false;
 
                 for (double key : mergeEvents.keySet()) {
-                    // only traverses all new merges of lower distances because inherited merges at lower distances always correspond to an existing new merge
+                    // only checks all new merges of lower distances as inherited merges always correspond to a previous new merge to avoid redundancy
                     if (key < distance && mergeEvents.get(key).newMerges().stream()
                             .anyMatch(m -> m.getResult().getDataPoints().equals(merge.getResult().getDataPoints()))) {
                         inherited = true;

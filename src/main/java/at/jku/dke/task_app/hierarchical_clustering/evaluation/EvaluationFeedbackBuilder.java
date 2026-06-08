@@ -90,7 +90,7 @@ public class EvaluationFeedbackBuilder {
         return this;
     }
 
-    public void feedbackGroupedByDistance() {
+    public void feedbackGroupedByDistance(boolean includeHeader) {
         if (feedbackLevel <= 0) {
             return;
         }
@@ -111,33 +111,14 @@ public class EvaluationFeedbackBuilder {
             .map(HierarchicalClusteringMerge::getDistance)
             .collect(Collectors.toCollection(TreeSet::new));
 
-        // alternative feedback for redundant merges if they are not to be counted as a mistake
-//        for (double distance : redundantMerges.keySet()) {
-//            String criterium = "criterium.redundantCluster";
-//            switch (feedbackLevel) {
-//                case 1:
-//                    addCriterion(criterium, BigDecimal.ZERO, criterium + ".feedback", redundantMerges.get(distance).size());
-//                    break;
-//                case 2:
-//                    addCriterion(criterium, BigDecimal.ZERO, criterium + ".feedback.distance", distance, redundantMerges.get(distance).size());
-//                    break;
-//                case 3:
-//                    List<String> resultLabels = new ArrayList<>();
-//                    for (HierarchicalClusteringMerge merge : redundantMerges.get(distance)) {
-//                        resultLabels.add(merge.getResult().getFullLabel());
-//                    }
-//
-//                    addCriterion(criterium, BigDecimal.ZERO, criterium + ".feedback.solution", distance, String.join(", ", resultLabels));
-//                    break;
-//            }
-//        }
-
         for (double distance : distances) {
             if (!hasFeedback(distance)) {
                 continue;
             }
 
-            addDistanceToEvaluation(distance);
+            if (includeHeader || feedbackLevel == 3) {
+                addDistanceHeaderToFeedback(distance);
+            }
 
             if (superfluousMerges.containsKey(distance)) {
                 mergeFeedback("criterium.superfluousCluster", distance, superfluousMerges.get(distance));
@@ -209,6 +190,32 @@ public class EvaluationFeedbackBuilder {
         attachSolutionAndDendrogram();
     }
 
+    private boolean hasFeedback(double distance) {
+        return superfluousMerges.containsKey(distance) ||
+            redundantMerges.containsKey(distance) ||
+            missingMerges.containsKey(distance) ||
+            superfluousDataPoints.containsKey(distance) ||
+            duplicateDataPoints.containsKey(distance) ||
+            missingDataPoints.containsKey(distance);
+    }
+
+    private void addDistanceHeaderToFeedback(double distance) {
+        String criterium = "criterium.distance";
+        BigDecimal pointsForDistance = solutionMergeEvents.get(distance).pointsForDistance().negate();
+
+        switch (this.feedbackLevel) {
+            case 1:
+                addCriterion(criterium, criterium + ".wrong");
+                break;
+            case 2:
+                addCriterion(criterium, criterium + ".wrong.distance", distance);
+                break;
+            case 3:
+                addCriterion(criterium, pointsForDistance, criterium + ".wrong.distance", distance);
+                break;
+        }
+    }
+
     private void wrongOrderFeedbackGeneral() {
         addCriterion("criterium.order", task.getWrongOrderPenalty().negate(), "criterium.order.feedback");
     }
@@ -220,29 +227,6 @@ public class EvaluationFeedbackBuilder {
             " " + this.messageSource.getMessage(criterium + ".feedback.solution", new Object[]{newStep}, locale) : "";
 
         addCriterion(criterium, criterium + ".feedback.step", merge.getDistance(), solution);
-    }
-
-    private boolean hasFeedback(double distance) {
-        return superfluousMerges.containsKey(distance) ||
-            redundantMerges.containsKey(distance) ||
-            missingMerges.containsKey(distance) ||
-            superfluousDataPoints.containsKey(distance) ||
-            duplicateDataPoints.containsKey(distance) ||
-            missingDataPoints.containsKey(distance);
-    }
-
-    private void addDistanceToEvaluation(double distance) {
-        String criterium = "criterium.distance";
-        BigDecimal pointsForDistance = solutionMergeEvents.get(distance).pointsForDistance().negate();
-
-        switch (this.feedbackLevel) {
-            case 1:
-                addCriterion(criterium, pointsForDistance, criterium + ".wrong");
-                break;
-            case 2, 3:
-                addCriterion(criterium, pointsForDistance, criterium + ".wrong.distance", distance);
-                break;
-        }
     }
 
     private void wrongOrSuperfluousDistanceFeedback(List<Double> wrongOrRedundantDistances) {
@@ -317,7 +301,7 @@ public class EvaluationFeedbackBuilder {
                 addCriterion(criterium, criterium + ".feedback", map.size());
                 break;
             case 2:
-                addCriterion(criterium, criterium + ".feedback.distance", map.size(), distance);
+                addCriterion(criterium, criterium + ".feedback.distance", distance, map.size());
                 break;
             case 3:
                 for (HierarchicalClusteringMerge merge : map.keySet()) {

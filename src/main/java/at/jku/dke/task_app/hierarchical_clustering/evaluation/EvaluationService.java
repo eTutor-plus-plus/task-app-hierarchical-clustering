@@ -115,9 +115,8 @@ public class EvaluationService {
         EvaluationFeedbackBuilder feedbackBuilder = new EvaluationFeedbackBuilder(task, this.messageSource, this.locale, this.feedbackLevel, this.criteria);
 
         if (task.getWrongOrderPenalty() != null && task.getWrongOrderPenalty().compareTo(BigDecimal.ZERO) != 0 && !eventWrapper.isCorrectOrder()) {
-            // TODO: find a way to give specific feedback concerning order of input
             awardedPoints = awardedPoints.subtract(task.getWrongOrderPenalty());
-            if (feedbackLevel >= 1) { // should be == 1 if more specific order feedback is added
+            if (feedbackLevel >= 1) {
                 feedbackBuilder.withWrongOrderGeneral();
             }
         }
@@ -162,7 +161,7 @@ public class EvaluationService {
                         if (foundSolutionMerges.get(distance) != null &&
                             foundSolutionMerges.get(distance).stream()
                                 .anyMatch(m -> m.getResult().getDataPoints().equals(inputMerge.getResult().getDataPoints()))) {
-                            correct = false; // TODO: decide whether superfluous/redundant clusters should count as wrong when rest of distance is correct
+                            correct = false;
                             redundantMerges.computeIfAbsent(distance, k -> new ArrayList<>()).add(inputMerge);
                         } else {
                             HierarchicalClusteringMerge solutionMerge = solutionMerges.stream()
@@ -241,7 +240,7 @@ public class EvaluationService {
                 .withDuplicateDataPoints(duplicateDataPoints)
                 .withSuperfluousDataPoints(superfluousDataPoints)
                 .withMissingDataPoints(missingDataPoints)
-                .feedbackGroupedByDistance();
+                .feedbackGroupedByDistance(true);
         }
 
         return awardedPoints;
