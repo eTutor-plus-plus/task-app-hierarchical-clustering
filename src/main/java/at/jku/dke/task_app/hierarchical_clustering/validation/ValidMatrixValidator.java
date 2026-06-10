@@ -25,31 +25,36 @@ public class ValidMatrixValidator implements ConstraintValidator<ValidMatrix, Hi
 
         double[][] distances = value.getDistances();
 
-        // distance matrix needs to be of size n x n (safety check)
+        // distance matrix needs to be of size n x n and contain enough labels (pure safety checks, this should not be possible through normal usage)
         for (int i = 0; i < distances.length; i++) {
             if (distances[i].length != distances.length) {
-                putMessage(context, "dimension", new Object[]{distances.length, i});
+                putMessage(context, "dimension", distances.length, i);
                 return false;
             }
+        }
+
+        if (distances.length != value.getLabels().size()) {
+            putMessage(context, "labels", distances.length, value.getLabels().size());
+            return false;
         }
 
         for (int i = 0; i < distances.length; i++) {
             // diagonal check
             if (distances[i][i] != 0) {
-                putMessage(context, "diagonal",  new Object[]{i});
+                putMessage(context, "diagonal", i);
                 return false;
             }
 
             for (int j = 0; j < i; j++) { // only go through lower triangle as matrix is symmetric
                 // symmetry check
                 if (distances[i][j] != distances[j][i]) {
-                    putMessage(context, "symmetry", new Object[]{List.of(value.getLabels().get(i), value.getLabels().get(j))});
+                    putMessage(context, "symmetry", List.of(value.getLabels().get(i), value.getLabels().get(j)));
                     return false;
                 }
 
                 // valid distances check (need only check lower triangle because symmetry has been established by the previous check)
                 if (distances[i][j] <= 0.0) {
-                    putMessage(context, "negatives", new Object[]{List.of(value.getLabels().get(i), value.getLabels().get(j))});
+                    putMessage(context, "negatives", List.of(value.getLabels().get(i), value.getLabels().get(j)));
                     return false;
                 }
             }
@@ -58,7 +63,7 @@ public class ValidMatrixValidator implements ConstraintValidator<ValidMatrix, Hi
         return true;
     }
 
-    private void putMessage(ConstraintValidatorContext context, String messageKey, Object[] messageParameters) {
+    private void putMessage(ConstraintValidatorContext context, String messageKey, Object... messageParameters) {
         if (context != null) {
             HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
 
