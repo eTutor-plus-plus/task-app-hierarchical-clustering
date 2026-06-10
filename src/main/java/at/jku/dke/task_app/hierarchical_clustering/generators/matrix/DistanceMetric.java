@@ -23,7 +23,7 @@ public enum DistanceMetric {
         sum += Math.abs(p1.getX() - p2.getX());
         sum += Math.abs(p1.getY() - p2.getY());
 
-        return ((double) Math.round(sum * 10)) / 10; // rounded to eliminate floating point calculation problems
+        return sum;
     });
 
 

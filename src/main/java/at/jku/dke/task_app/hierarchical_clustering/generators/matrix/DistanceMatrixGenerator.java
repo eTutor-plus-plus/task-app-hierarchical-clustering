@@ -6,14 +6,22 @@ import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMatrix;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 public class DistanceMatrixGenerator implements Generator<HierarchicalClusteringTask.DistanceMatrix> {
 
 	public HierarchicalClusteringTask.DistanceMatrix generate(int nDataPoints, Random random) {
-		if (nDataPoints <= 0) throw new IllegalArgumentException("n must be > 0");
-        // following line only if step should be manually assignable (by teachers)
-		// if (STEP <= 0) throw new IllegalArgumentException("step must be > 0");
+		if (nDataPoints <= 0) {
+            throw new IllegalArgumentException("n must be > 0");
+        }
+
+        BigDecimal step = Config.step;
+
+        if (step.compareTo(BigDecimal.ZERO) == 0) {
+            throw new IllegalArgumentException("Generation step must be set to a value > 0 in configuration");
+        }
 
 		// number of point pairs that need distances
 		int nPairs = nDataPoints * (nDataPoints - 1) / 2;
@@ -23,7 +31,7 @@ public class DistanceMatrixGenerator implements Generator<HierarchicalClustering
 		int poolSize = (int) Math.ceil(nPairs * expansionFactor);
 		List<Double> pool = new ArrayList<>(poolSize);
 		for (int i = 1; i <= poolSize; i++) {
-			pool.add(i * Config.step);
+			pool.add(step.multiply(new BigDecimal(i)).doubleValue());
 		}
 
 		// shuffle pool (to randomize positions of values in the matrix)
@@ -59,7 +67,9 @@ public class DistanceMatrixGenerator implements Generator<HierarchicalClustering
             matrix[i][i] = 0.0;
 
             for (int j = i + 1; j < n; j++) {
-                double d = Math.round(metric.distance(points.get(i), points.get(j)) * 10) / 10.0;
+                BigDecimal bd = BigDecimal.valueOf(metric.distance(points.get(i), points.get(j)));
+                bd = bd.setScale(2, RoundingMode.HALF_UP);
+                double d = bd.doubleValue();
 
                 matrix[i][j] = d;
                 matrix[j][i] = d;
@@ -70,11 +80,11 @@ public class DistanceMatrixGenerator implements Generator<HierarchicalClustering
     }
 
     @Component
-    static class Config {
-        static double step;
+    public static class Config {
+        static BigDecimal step;
 
         @Value("${app.generation.matrix.step}")
-        public void setStep(double step) {
+        public void setStep(BigDecimal step) {
             Config.step = step;
         }
     }

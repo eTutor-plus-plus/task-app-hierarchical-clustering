@@ -87,7 +87,7 @@ public class ManhattanCoordinateGenerator extends CoordinateGenerator {
     }
 
     @Component
-    static class Config {
+    public static class Config {
         private static int maxRestarts;
         private static int maxAttemptsPerPoint;
 

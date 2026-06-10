@@ -167,7 +167,7 @@ public class DendrogramSvgRenderer {
     }
 
     @Component
-    static class Config {
+    public static class Config {
         // canvas
         private static int canvasWidth;
         private static int canvasHeight;

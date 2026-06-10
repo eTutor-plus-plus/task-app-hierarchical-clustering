@@ -87,17 +87,18 @@ management:
 
 # Custom parameter config
 app:
-  # Configs matrix generation step and for both coordinate generators separately
+  # Configs for matrix generation step and both coordinate generators separately
   generation:
     matrix:
       step: 0.5
 
+    # Generation for manhattan distance is strictly faster, therefore separate config to allow separate setting of attempts
     coordinates:
       euclidean:
         restarts: 50
-        max-attempts-per-point: 200_000
+        max-attempts-per-point: 100_000
       manhattan:
-        restarts: 50
+        restarts: 150
         max-attempts-per-point: 200_000
 
   # Dendrogram layout and style
