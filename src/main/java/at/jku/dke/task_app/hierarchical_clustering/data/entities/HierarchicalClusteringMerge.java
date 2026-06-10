@@ -2,7 +2,7 @@ package at.jku.dke.task_app.hierarchical_clustering.data.entities;
 
 import jakarta.persistence.*;
 
-import java.util.Objects;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -29,10 +29,10 @@ public class HierarchicalClusteringMerge {
     private HierarchicalClusteringCluster result;
 
     @Column(name = "distance", nullable = false)
-    private double distance;
+    private BigDecimal distance;
 
     @Column(name = "step", nullable = false)
-    private int step;
+    private Integer step;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
@@ -40,7 +40,7 @@ public class HierarchicalClusteringMerge {
 
     public HierarchicalClusteringMerge() {}
 
-    public HierarchicalClusteringMerge(HierarchicalClusteringCluster source1, HierarchicalClusteringCluster source2, HierarchicalClusteringCluster merged, double distance, int step) {
+    public HierarchicalClusteringMerge(HierarchicalClusteringCluster source1, HierarchicalClusteringCluster source2, HierarchicalClusteringCluster merged, BigDecimal distance, int step) {
         this.sourceCluster1 = source1;
         this.sourceCluster2 = source2;
         this.result = merged;
@@ -80,19 +80,19 @@ public class HierarchicalClusteringMerge {
         this.result = result;
     }
 
-    public double getDistance() {
+    public BigDecimal getDistance() {
         return distance;
     }
 
-    public void setDistance(double distance) {
+    public void setDistance(BigDecimal distance) {
         this.distance = distance;
     }
 
-    public int getStep() {
+    public Integer getStep() {
         return step;
     }
 
-    public void setStep(int step) {
+    public void setStep(Integer step) {
         this.step = step;
     }
 

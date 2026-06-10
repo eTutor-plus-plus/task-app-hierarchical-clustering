@@ -1,14 +1,15 @@
 package at.jku.dke.task_app.hierarchical_clustering.clustering;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public enum LinkageMethod {
     SINGLE((a, b, dist) -> {
-        double min = Double.MAX_VALUE;
+        BigDecimal min = BigDecimal.valueOf(Double.MAX_VALUE);
 
         for (int i : a) {
             for (int j : b) {
-                if (dist[i][j] < min) {
+                if (dist[i][j].compareTo(min) < 0) {
                     min = dist[i][j];
                 }
             }
@@ -18,11 +19,11 @@ public enum LinkageMethod {
     }),
 
     COMPLETE((a, b, dist) -> {
-        double max = Double.MIN_VALUE;
+        BigDecimal max = BigDecimal.valueOf(Double.MIN_VALUE);
 
         for (int i : a) {
             for (int j : b) {
-                if (dist[i][j] > max) {
+                if (dist[i][j].compareTo(max) > 0) {
                     max = dist[i][j];
                 }
             }
@@ -38,14 +39,14 @@ public enum LinkageMethod {
         this.linkage = linkage;
     }
 
-    public double distance(List<Integer> a, List<Integer> b, double[][] dist) {
+    public BigDecimal distance(List<Integer> a, List<Integer> b, BigDecimal[][] dist) {
         return linkage.distance(a, b, dist);
     }
 
 
     @FunctionalInterface
     private interface Linkage {
-        double distance(List<Integer> a, List<Integer> b, double[][] dist);
+        BigDecimal distance(List<Integer> a, List<Integer> b, BigDecimal[][] dist);
     }
 
 }

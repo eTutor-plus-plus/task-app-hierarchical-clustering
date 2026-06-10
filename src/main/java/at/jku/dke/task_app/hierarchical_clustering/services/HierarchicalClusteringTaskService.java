@@ -121,10 +121,10 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         boolean hasAssignmentTypeChangedToMatrix = task.getCoordinateSystem() != null && data.assignmentType() == AssignmentTypeDto.MATRIX;
         boolean hasDistanceMetricChanged = data.assignmentType() == AssignmentTypeDto.COORDINATES && task.getDistanceMetric() != data.distanceMetric();
         boolean haveAxisLengthsChanged = data.assignmentType() == AssignmentTypeDto.COORDINATES && task.getCoordinateSystem() != null &&
-            (data.coordinateSystem().getMinX() != task.getCoordinateSystem().getMinX() ||
-                data.coordinateSystem().getMaxX() != task.getCoordinateSystem().getMaxX() ||
-                data.coordinateSystem().getMinY() != task.getCoordinateSystem().getMinY() ||
-                data.coordinateSystem().getMaxY() != task.getCoordinateSystem().getMaxY());
+            (!Objects.equals(data.coordinateSystem().getMinX(), task.getCoordinateSystem().getMinX()) ||
+                !Objects.equals(data.coordinateSystem().getMaxX(), task.getCoordinateSystem().getMaxX()) ||
+                !Objects.equals(data.coordinateSystem().getMinY(), task.getCoordinateSystem().getMinY()) ||
+                !Objects.equals(data.coordinateSystem().getMaxY(), task.getCoordinateSystem().getMaxY()));
 
         return isDifferentN || hasAssignmentTypeChangedToCoordinates || hasAssignmentTypeChangedToMatrix || hasDistanceMetricChanged || haveAxisLengthsChanged;
     }
@@ -278,7 +278,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
     private String getMatrixAsHtmlTable(HierarchicalClusteringTask.DistanceMatrix matrix) {
         StringBuilder html = new StringBuilder();
         List<String> labels = matrix.getLabels();
-        double[][] distances = matrix.getDistances();
+        BigDecimal[][] distances = matrix.getDistances();
 
         html.append("<table>");
 

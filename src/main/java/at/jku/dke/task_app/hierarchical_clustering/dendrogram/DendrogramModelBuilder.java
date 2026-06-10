@@ -3,6 +3,7 @@ package at.jku.dke.task_app.hierarchical_clustering.dendrogram;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringCluster;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +30,7 @@ public class DendrogramModelBuilder {
             String leftLabel  = merge.getSourceCluster1().getLabel();
             String rightLabel = merge.getSourceCluster2().getLabel();
             String newLabel   = merge.getResult().getLabel();
-            double height     = merge.getDistance();
+            BigDecimal height     = merge.getDistance();
 
             DendrogramModel.Node leftNode  = nodeMap.get(leftLabel);
             DendrogramModel.Node rightNode = nodeMap.get(rightLabel);
@@ -37,7 +38,7 @@ public class DendrogramModelBuilder {
             if (leftNode  == null) throw new IllegalStateException("No node for left label:  " + leftLabel);
             if (rightNode == null) throw new IllegalStateException("No node for right label: " + rightLabel);
 
-            DendrogramModel.Node merged = new DendrogramModel.Node(newLabel, height, leftNode, rightNode);
+            DendrogramModel.Node merged = new DendrogramModel.Node(newLabel, height.doubleValue(), leftNode, rightNode);
             nodeMap.put(newLabel, merged);
             root = merged;
         }

@@ -4,6 +4,8 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 public class EuclideanCoordinateGenerator extends CoordinateGenerator {
@@ -60,8 +62,8 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
 
                         result.add(new HierarchicalClusteringTask.CoordinatePoint(
                             String.valueOf(i + 1),
-                            cand[0] / 10.0,
-                            cand[1] / 10.0
+                            BigDecimal.valueOf(cand[0]).divide(BigDecimal.TEN, 1, RoundingMode.HALF_UP).stripTrailingZeros(),
+                            BigDecimal.valueOf(cand[1]).divide(BigDecimal.TEN, 1, RoundingMode.HALF_UP).stripTrailingZeros()
                         ));
 
                         placed.add(cand);

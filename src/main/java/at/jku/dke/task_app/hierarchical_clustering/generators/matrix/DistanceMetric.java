@@ -2,38 +2,40 @@ package at.jku.dke.task_app.hierarchical_clustering.generators.matrix;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.function.BiFunction;
 
 public enum DistanceMetric {
 
     EUCLIDEAN((p1, p2) -> {
-        double sum = 0.0;
+        BigDecimal sum = BigDecimal.ZERO;
 
-        double diffX = p1.getX() - p2.getX();
-        sum += diffX * diffX;
-        double diffY = p1.getY() - p2.getY();
-        sum += diffY * diffY;
+        BigDecimal diffX = p1.getX().subtract(p2.getX());
+        sum = sum.add(diffX.multiply(diffX));
+        BigDecimal diffY = p1.getY().subtract(p2.getY());
+        sum = sum.add(diffY.multiply(diffY));
 
-        return Math.sqrt(sum);
+        return sum.sqrt(MathContext.DECIMAL128).stripTrailingZeros();
     }),
 
     MANHATTAN((p1, p2) -> {
-        double sum = 0.0;
+        BigDecimal sum = BigDecimal.ZERO;
 
-        sum += Math.abs(p1.getX() - p2.getX());
-        sum += Math.abs(p1.getY() - p2.getY());
+        sum = sum.add(p1.getX().subtract(p2.getX()).abs());
+        sum = sum.add(p1.getY().subtract(p2.getY()).abs());
 
-        return sum;
+        return sum.stripTrailingZeros();
     });
 
 
-    private final BiFunction<HierarchicalClusteringTask.CoordinatePoint, HierarchicalClusteringTask.CoordinatePoint, Double> distanceFunction;
+    private final BiFunction<HierarchicalClusteringTask.CoordinatePoint, HierarchicalClusteringTask.CoordinatePoint, BigDecimal> distanceFunction;
 
-    DistanceMetric(BiFunction<HierarchicalClusteringTask.CoordinatePoint, HierarchicalClusteringTask.CoordinatePoint, Double> distanceFunction) {
+    DistanceMetric(BiFunction<HierarchicalClusteringTask.CoordinatePoint, HierarchicalClusteringTask.CoordinatePoint, BigDecimal> distanceFunction) {
         this.distanceFunction = distanceFunction;
     }
 
-    public double distance(HierarchicalClusteringTask.CoordinatePoint p1, HierarchicalClusteringTask.CoordinatePoint p2) {
+    public BigDecimal distance(HierarchicalClusteringTask.CoordinatePoint p1, HierarchicalClusteringTask.CoordinatePoint p2) {
         return this.distanceFunction.apply(p1, p2);
     }
 

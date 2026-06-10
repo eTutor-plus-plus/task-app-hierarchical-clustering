@@ -54,6 +54,6 @@ public class SolutionFormatter {
         return cluster;
     }
 
-    public record RawMerge(List<String> leftPoints, List<String> rightPoints, double distance, int step) {
+    public record RawMerge(List<String> leftPoints, List<String> rightPoints, java.math.BigDecimal distance, int step) {
     }
 }

@@ -159,10 +159,10 @@ public class HierarchicalClusteringTask extends BaseTask {
     }
 
     public static class CoordinateSystem {
-        private int minX;
-        private int maxX;
-        private int minY;
-        private int maxY;
+        private Integer minX;
+        private Integer maxX;
+        private Integer minY;
+        private Integer maxY;
         private List<CoordinatePoint> coordinateList;
 
         public CoordinateSystem(int minX, int maxX, int minY, int maxY, List<CoordinatePoint> coordinateList) {
@@ -173,35 +173,35 @@ public class HierarchicalClusteringTask extends BaseTask {
             this.coordinateList = coordinateList;
         }
 
-        public int getMinX() {
+        public Integer getMinX() {
             return minX;
         }
 
-        public void setMinX(int minX) {
+        public void setMinX(Integer minX) {
             this.minX = minX;
         }
 
-        public int getMaxX() {
+        public Integer getMaxX() {
             return maxX;
         }
 
-        public void setMaxX(int maxX) {
+        public void setMaxX(Integer maxX) {
             this.maxX = maxX;
         }
 
-        public int getMinY() {
+        public Integer getMinY() {
             return minY;
         }
 
-        public void setMinY(int minY) {
+        public void setMinY(Integer minY) {
             this.minY = minY;
         }
 
-        public int getMaxY() {
+        public Integer getMaxY() {
             return maxY;
         }
 
-        public void setMaxY(int maxY) {
+        public void setMaxY(Integer maxY) {
             this.maxY = maxY;
         }
 
@@ -216,10 +216,10 @@ public class HierarchicalClusteringTask extends BaseTask {
 
     public static class CoordinatePoint {
         private String label;
-        private double x;
-        private double y;
+        private BigDecimal x;
+        private BigDecimal y;
 
-        public CoordinatePoint(String label, double x, double y) {
+        public CoordinatePoint(String label, BigDecimal x, BigDecimal y) {
             this.label = label;
             this.x = x;
             this.y = y;
@@ -233,19 +233,19 @@ public class HierarchicalClusteringTask extends BaseTask {
             this.label = label;
         }
 
-        public double getX() {
+        public BigDecimal getX() {
             return x;
         }
 
-        public void setX(double x) {
+        public void setX(BigDecimal x) {
             this.x = x;
         }
 
-        public double getY() {
+        public BigDecimal getY() {
             return y;
         }
 
-        public void setY(double y) {
+        public void setY(BigDecimal y) {
             this.y = y;
         }
     }
@@ -253,9 +253,9 @@ public class HierarchicalClusteringTask extends BaseTask {
 
     public static class DistanceMatrix {
         private List<String> labels;
-        private double[][] distances;
+        private BigDecimal[][] distances;
 
-        public DistanceMatrix(List<String> labels, double[][] distances) {
+        public DistanceMatrix(List<String> labels, BigDecimal[][] distances) {
             this.labels = labels;
             this.distances = distances;
         }
@@ -268,11 +268,11 @@ public class HierarchicalClusteringTask extends BaseTask {
             this.labels = labels;
         }
 
-        public double[][] getDistances() {
+        public BigDecimal[][] getDistances() {
             return distances;
         }
 
-        public void setDistances(double[][] distances) {
+        public void setDistances(BigDecimal[][] distances) {
             this.distances = distances;
         }
     }

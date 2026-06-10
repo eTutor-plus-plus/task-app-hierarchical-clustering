@@ -4,6 +4,8 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 public class ManhattanCoordinateGenerator extends CoordinateGenerator {
@@ -47,7 +49,7 @@ public class ManhattanCoordinateGenerator extends CoordinateGenerator {
                     Set<Integer> newDists = new HashSet<>();
                     boolean valid = true;
                     for (var p : points) {
-                        int dist = Math.abs(cand[0] - (int) (p.getX() * 10)) + Math.abs(cand[1] - (int) (p.getY() * 10));
+                        int dist = Math.abs(cand[0] - (p.getX().multiply(BigDecimal.TEN).intValue())) + Math.abs(cand[1] - (p.getY().multiply(BigDecimal.TEN).intValue()));
 
                         if (usedDistances.contains(dist) || newDists.contains(dist)) {
                             valid = false;
@@ -60,7 +62,11 @@ public class ManhattanCoordinateGenerator extends CoordinateGenerator {
                     if (!valid) continue;
 
                     // Place the point
-                    points.add(new HierarchicalClusteringTask.CoordinatePoint(String.valueOf(points.size() + 1), cand[0] / 10.0, cand[1] / 10.0));
+                    points.add(new HierarchicalClusteringTask.CoordinatePoint(
+                        String.valueOf(points.size() + 1),
+                        BigDecimal.valueOf(cand[0]).divide(BigDecimal.TEN, 1, RoundingMode.HALF_UP).stripTrailingZeros(),
+                        BigDecimal.valueOf(cand[1]).divide(BigDecimal.TEN, 1, RoundingMode.HALF_UP).stripTrailingZeros()
+                    ));
 
                     usedDistances.addAll(newDists);
 

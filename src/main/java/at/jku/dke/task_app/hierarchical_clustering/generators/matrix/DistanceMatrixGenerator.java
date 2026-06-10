@@ -12,6 +12,7 @@ import java.util.*;
 
 public class DistanceMatrixGenerator implements Generator<HierarchicalClusteringTask.DistanceMatrix> {
 
+    @Override
 	public HierarchicalClusteringTask.DistanceMatrix generate(int nDataPoints, Random random) {
 		if (nDataPoints <= 0) {
             throw new IllegalArgumentException("n must be > 0");
@@ -39,16 +40,16 @@ public class DistanceMatrixGenerator implements Generator<HierarchicalClustering
 
 		// fill matrix
         List<String> labels = new ArrayList<>(nDataPoints);
-		double[][] matrix = new double[nDataPoints][nDataPoints];
+		BigDecimal[][] matrix = new BigDecimal[nDataPoints][nDataPoints];
 		int idx = 0;
 
 		for (int i = 0; i < nDataPoints; i++) {
             labels.add(String.valueOf(i + 1));
-			matrix[i][i] = 0.0;
+			matrix[i][i] = BigDecimal.ZERO;
 
 			for (int j = i + 1; j < nDataPoints; j++) {
-				matrix[i][j] = pool.get(idx);
-				matrix[j][i] = pool.get(idx);
+				matrix[i][j] = BigDecimal.valueOf(pool.get(idx));
+				matrix[j][i] = BigDecimal.valueOf(pool.get(idx));
 				idx++;
 			}
 		}
@@ -60,19 +61,17 @@ public class DistanceMatrixGenerator implements Generator<HierarchicalClustering
     public HierarchicalClusteringTask.DistanceMatrix calculateMatrixFromCoordinates(List<HierarchicalClusteringTask.CoordinatePoint> points, DistanceMetric metric) {
         int n = points.size();
         List<String> labels = new ArrayList<>();
-        double[][] matrix = new double[n][n];
+        BigDecimal[][] matrix = new BigDecimal[n][n];
 
         for (int i = 0; i < n; i++) {
             labels.add(points.get(i).getLabel());
-            matrix[i][i] = 0.0;
+            matrix[i][i] = BigDecimal.ZERO;
 
             for (int j = i + 1; j < n; j++) {
-                BigDecimal bd = BigDecimal.valueOf(metric.distance(points.get(i), points.get(j)));
-                bd = bd.setScale(2, RoundingMode.HALF_UP);
-                double d = bd.doubleValue();
+                BigDecimal distance = metric.distance(points.get(i), points.get(j)).setScale(2, RoundingMode.HALF_UP).stripTrailingZeros();
 
-                matrix[i][j] = d;
-                matrix[j][i] = d;
+                matrix[i][j] = distance;
+                matrix[j][i] = distance;
             }
         }
 

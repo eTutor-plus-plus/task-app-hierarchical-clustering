@@ -3,6 +3,7 @@ package at.jku.dke.task_app.hierarchical_clustering.clustering;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +15,13 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
         this.linkage = linkage;
     }
 
+    @Override
     public List<HierarchicalClusteringMerge> cluster(HierarchicalClusteringTask.DistanceMatrix input) {
         int n = input.getLabels().size();
-        double[][] originalMatrix = input.getDistances();
+        BigDecimal[][] originalMatrix = input.getDistances();
 
         // Working distance matrix
-        double[][] workingMatrix = deepCopy(originalMatrix, n);
+        BigDecimal[][] workingMatrix = deepCopy(originalMatrix, n);
 
         // Track which original label indices each active cluster contains
         List<List<Integer>> clusters = new ArrayList<>(n);
@@ -37,12 +39,12 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
             checkForTiebreaker(workingMatrix);
 
             // 1. Find the closest pair of clusters
-            double minDist = Double.MAX_VALUE;
+            BigDecimal minDist = BigDecimal.valueOf(Double.MAX_VALUE);
             int clusterA = -1, clusterB = -1;
 
             for (int i = 0; i < size; i++) {
                 for (int j = i + 1; j < size; j++) {
-                    if (workingMatrix[i][j] < minDist) {
+                    if (workingMatrix[i][j].compareTo(minDist) < 0) {
                         minDist = workingMatrix[i][j];
                         clusterA  = i;
                         clusterB  = j;
@@ -62,11 +64,11 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
 
             // 4. Rebuild the distance matrix for the reduced cluster set
             int newSize = clusters.size();
-            double[][] newDist = new double[newSize][newSize];
+            BigDecimal[][] newDist = new BigDecimal[newSize][newSize];
 
             for (int i = 0; i < newSize; i++) {
                 for (int j = i + 1; j < newSize; j++) {
-                    double d = linkage.distance(clusters.get(i), clusters.get(j), originalMatrix);
+                    BigDecimal d = linkage.distance(clusters.get(i), clusters.get(j), originalMatrix);
                     newDist[i][j] = d;
                     newDist[j][i] = d;
                 }
@@ -78,8 +80,8 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
         return SolutionFormatter.format(rawMerges);
     }
 
-    private double[][] deepCopy(double[][] sourceMatrix, int n) {
-        double[][] copy = new double[n][n];
+    private BigDecimal[][] deepCopy(BigDecimal[][] sourceMatrix, int n) {
+        BigDecimal[][] copy = new BigDecimal[n][n];
 
         for (int i = 0; i < n; i++) {
             copy[i] = sourceMatrix[i].clone();
@@ -98,14 +100,14 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
         return result;
     }
 
-    private void checkForTiebreaker(double[][] workingMatrix) {
+    private void checkForTiebreaker(BigDecimal[][] workingMatrix) {
         int size = workingMatrix.length;
 
         // Find minimum distance
-        double minDist = Double.MAX_VALUE;
+        BigDecimal minDist = BigDecimal.valueOf(Double.MAX_VALUE);
         for (int i = 0; i < size; i++) {
             for (int j = i + 1; j < size; j++) {
-                minDist = Math.min(minDist, workingMatrix[i][j]);
+                minDist = new BigDecimal(Double.toString(Math.min(minDist.doubleValue(), workingMatrix[i][j].doubleValue())));
             }
         }
 
@@ -114,7 +116,7 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
 
         for (int i = 0; i < size; i++) {
             for (int j = i + 1; j < size; j++) {
-                if (Double.compare(workingMatrix[i][j], minDist) == 0) {
+                if (workingMatrix[i][j].compareTo(minDist) == 0) {
                     if (seen[i] || seen[j]) {
                         throw new IllegalStateException(
                             "Solution for current Matrix leads to Tiebreaker! Consider changing or re-arranging duplicate distances."

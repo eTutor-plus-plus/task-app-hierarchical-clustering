@@ -4,6 +4,7 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 import org.springframework.context.MessageSource;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,7 +16,7 @@ public class SyntaxParser {
 
     private int lineNumber;
     private int stepNumber;
-    private double previousDistance;
+    private BigDecimal previousDistance;
 
     public SyntaxParser(MessageSource messageSource, Locale locale) {
         this.messageSource = messageSource;
@@ -29,7 +30,7 @@ public class SyntaxParser {
 
         lineNumber = 1;
         stepNumber = 1;
-        previousDistance = -1.0;
+        previousDistance = new BigDecimal("-1.0");
 
         for (String line : input.split("\n")) {
             if (!line.isEmpty()) {
@@ -55,15 +56,15 @@ public class SyntaxParser {
             throwSyntaxError("separator", lineNumber);
         }
 
-        double distance = -1;
+        BigDecimal distance = BigDecimal.ZERO;
         try {
-            distance = Double.parseDouble(parts[0]);
+            distance = new BigDecimal(parts[0]).stripTrailingZeros();
         } catch (NumberFormatException e) {
             throwSyntaxError("distance", parts[0], lineNumber);
         }
 
         // ordering should be ascending, so new distance has to be equal or higher for correct order
-        if (distance < previousDistance) {
+        if (distance.compareTo(previousDistance) < 0) {
             eventWrapper.isCorrectOrder = false;
         }
 
@@ -121,11 +122,11 @@ public class SyntaxParser {
     }
 
     private void buildMergeEvents(List<HierarchicalClusteringMerge> merges, MergeEventWrapper eventWrapper) {
-        SortedMap<Double, EvaluationService.MergeEventAtDistance> mergeEvents = new TreeMap<>();
-        SortedMap<Double, List<HierarchicalClusteringMerge>> mergesByDistance = merges.stream()
+        SortedMap<BigDecimal, EvaluationService.MergeEventAtDistance> mergeEvents = new TreeMap<>();
+        SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> mergesByDistance = merges.stream()
                 .collect(Collectors.groupingBy(HierarchicalClusteringMerge::getDistance, TreeMap::new, Collectors.toList()));
 
-        for (double distance: mergesByDistance.keySet()) {
+        for (BigDecimal distance: mergesByDistance.keySet()) {
             List<HierarchicalClusteringMerge> mergeList = mergesByDistance.get(distance);
             List<HierarchicalClusteringMerge> newMerges = new ArrayList<>();
             List<HierarchicalClusteringMerge> inheritedMerges = new ArrayList<>();
@@ -133,9 +134,9 @@ public class SyntaxParser {
             for (HierarchicalClusteringMerge merge : mergeList) {
                 boolean inherited = false;
 
-                for (double key : mergeEvents.keySet()) {
+                for (BigDecimal key : mergeEvents.keySet()) {
                     // only checks all new merges of lower distances as inherited merges always correspond to a previous new merge to avoid redundancy
-                    if (key < distance && mergeEvents.get(key).newMerges().stream()
+                    if (key.compareTo(distance) < 0 && mergeEvents.get(key).newMerges().stream()
                             .anyMatch(m -> m.getResult().getDataPoints().equals(merge.getResult().getDataPoints()))) {
                         inherited = true;
                         break;
@@ -165,7 +166,7 @@ public class SyntaxParser {
 
     public static class MergeEventWrapper {
         private boolean isCorrectOrder;
-        private SortedMap<Double, EvaluationService.MergeEventAtDistance> mergeEvents;
+        private SortedMap<BigDecimal, EvaluationService.MergeEventAtDistance> mergeEvents;
 
         private MergeEventWrapper() {}
 
@@ -173,7 +174,7 @@ public class SyntaxParser {
             return isCorrectOrder;
         }
 
-        public SortedMap<Double, EvaluationService.MergeEventAtDistance> mergeEvents() {
+        public SortedMap<BigDecimal, EvaluationService.MergeEventAtDistance> mergeEvents() {
             return mergeEvents;
         }
     }
