@@ -11,12 +11,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-class BinarySearchSubmissionServiceTest {
+class HierarchicalClusteringSubmissionServiceTest {
 
     @Test
     void createSubmissionEntity() {
         // Arrange
-        SubmitSubmissionDto<HierarchicalClusteringSubmissionDto> dto = new SubmitSubmissionDto<>("test-user", "test-quiz", 3L, "de", SubmissionMode.SUBMIT, 2, new HierarchicalClusteringSubmissionDto("33"));
+        SubmitSubmissionDto<HierarchicalClusteringSubmissionDto> dto = new SubmitSubmissionDto<>("test-user", "test-quiz", 3L, "de", SubmissionMode.SUBMIT, 2, new HierarchicalClusteringSubmissionDto("Distance 1.0: {3,4}"));
         HierarchicalClusteringSubmissionService service = new HierarchicalClusteringSubmissionService(null, null, null);
 
         // Act
@@ -29,7 +29,7 @@ class BinarySearchSubmissionServiceTest {
     @Test
     void mapSubmissionToSubmissionData() {
         // Arrange
-        HierarchicalClusteringSubmission submission = new HierarchicalClusteringSubmission("33");
+        HierarchicalClusteringSubmission submission = new HierarchicalClusteringSubmission("Distance 1.0: {3,4}");
         HierarchicalClusteringSubmissionService service = new HierarchicalClusteringSubmissionService(null, null, null);
 
         // Act
@@ -43,7 +43,7 @@ class BinarySearchSubmissionServiceTest {
     void evaluate() {
         // Arrange
         var evalService = mock(EvaluationService.class);
-        SubmitSubmissionDto<HierarchicalClusteringSubmissionDto> dto = new SubmitSubmissionDto<>("test-user", "test-quiz", 3L, "de", SubmissionMode.SUBMIT, 2, new HierarchicalClusteringSubmissionDto("33"));
+        SubmitSubmissionDto<HierarchicalClusteringSubmissionDto> dto = new SubmitSubmissionDto<>("test-user", "test-quiz", 3L, "de", SubmissionMode.SUBMIT, 2, new HierarchicalClusteringSubmissionDto("Distance 1.0: {3,4}"));
         HierarchicalClusteringSubmissionService service = new HierarchicalClusteringSubmissionService(null, null, evalService);
 
         // Act
