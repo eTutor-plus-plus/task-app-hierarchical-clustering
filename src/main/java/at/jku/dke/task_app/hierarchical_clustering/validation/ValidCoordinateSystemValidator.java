@@ -7,7 +7,6 @@ import org.hibernate.validator.constraintvalidation.HibernateConstraintValidator
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 
-import java.util.List;
 import java.util.Locale;
 
 public class ValidCoordinateSystemValidator implements ConstraintValidator<ValidCoordinateSystem, HierarchicalClusteringTask.CoordinateSystem> {

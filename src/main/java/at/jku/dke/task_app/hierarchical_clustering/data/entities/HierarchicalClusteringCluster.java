@@ -3,7 +3,6 @@ package at.jku.dke.task_app.hierarchical_clustering.data.entities;
 import jakarta.persistence.*;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**

@@ -2,7 +2,6 @@ package at.jku.dke.task_app.hierarchical_clustering.data.repositories;
 
 import at.jku.dke.etutor.task_app.data.repositories.TaskRepository;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.lang.NonNull;
 
