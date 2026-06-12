@@ -4,7 +4,7 @@ import at.jku.dke.etutor.task_app.dto.CriterionDto;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringCluster;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
-import at.jku.dke.task_app.hierarchical_clustering.dendrogram.DendrogramImageExporter;
+import at.jku.dke.task_app.hierarchical_clustering.dendrogram.ImageExporter;
 import at.jku.dke.task_app.hierarchical_clustering.dendrogram.DendrogramSvgRenderer;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -97,7 +97,7 @@ public class EvaluationFeedbackBuilder {
         }
 
         if (isWrongOrder) {
-            wrongOrderFeedbackGeneral();
+            wrongOrderFeedback();
         }
 
         if (!wrongOrSuperfluousDistances.isEmpty()) {
@@ -105,7 +105,7 @@ public class EvaluationFeedbackBuilder {
         }
 
         if (!missingDistances.isEmpty()) {
-            missingDistancesFeedback(missingDistances);
+            missingDistanceFeedback(missingDistances);
         }
 
         SortedSet<BigDecimal> distances = task.getSolutionMergeHistory().stream()
@@ -117,73 +117,31 @@ public class EvaluationFeedbackBuilder {
                 continue;
             }
 
-            addDistanceHeaderToFeedback(distance);
+            addDistanceHeader(distance);
 
             if (superfluousMerges.containsKey(distance)) {
-                mergeFeedback("criterium.superfluousCluster", distance, superfluousMerges.get(distance));
+                clusterFeedback("criterium.superfluousCluster", distance, superfluousMerges.get(distance));
             }
 
             if (redundantMerges.containsKey(distance)) {
-                mergeFeedback("criterium.redundantCluster", distance, redundantMerges.get(distance));
+                clusterFeedback("criterium.redundantCluster", distance, redundantMerges.get(distance));
             }
 
             if (missingMerges.containsKey(distance)) {
-                mergeFeedback("criterium.missingCluster", distance, missingMerges.get(distance));
+                clusterFeedback("criterium.missingCluster", distance, missingMerges.get(distance));
             }
 
             if (superfluousDataPoints.containsKey(distance)) {
-                pointInClusterFeedback("criterium.superfluousPointInCluster", distance, superfluousDataPoints.get(distance));
+                dataPointFeedback("criterium.superfluousPointInCluster", distance, superfluousDataPoints.get(distance));
             }
 
             if (duplicateDataPoints.containsKey(distance)) {
-                pointInClusterFeedback("criterium.duplicatePointInCluster", distance, duplicateDataPoints.get(distance));
+                dataPointFeedback("criterium.duplicatePointInCluster", distance, duplicateDataPoints.get(distance));
             }
 
             if (missingDataPoints.containsKey(distance)) {
-                pointInClusterFeedback("criterium.missingPointInCluster", distance, missingDataPoints.get(distance));
+                dataPointFeedback("criterium.missingPointInCluster", distance, missingDataPoints.get(distance));
             }
-        }
-
-        attachSolutionAndDendrogram();
-    }
-
-    public void feedbackGroupedByType() {
-        if (feedbackLevel <= 0) {
-            return;
-        }
-
-        if (isWrongOrder) {
-            wrongOrderFeedbackGeneral();
-        }
-
-        if (!wrongOrSuperfluousDistances.isEmpty()) {
-            wrongOrSuperfluousDistanceFeedback(wrongOrSuperfluousDistances);
-        }
-
-        missingDistancesFeedback(missingDistances);
-
-        for (BigDecimal distance : duplicateDataPoints.keySet()) {
-            pointInClusterFeedback("criterium.duplicatePointInCluster", distance, duplicateDataPoints.get(distance));
-        }
-
-        for (BigDecimal distance : missingDataPoints.keySet()) {
-            pointInClusterFeedback("criterium.missingPointInCluster", distance, missingDataPoints.get(distance));
-        }
-
-        for (BigDecimal distance : superfluousDataPoints.keySet()) {
-            pointInClusterFeedback("criterium.superfluousPointInCluster", distance, superfluousDataPoints.get(distance));
-        }
-
-        for (BigDecimal distance : missingMerges.keySet()) {
-            mergeFeedback("criterium.missingCluster", distance, missingMerges.get(distance));
-        }
-
-        for (BigDecimal distance : redundantMerges.keySet()) {
-            mergeFeedback("criterium.redundantCluster", distance, redundantMerges.get(distance));
-        }
-
-        for (BigDecimal distance : superfluousMerges.keySet()) {
-            mergeFeedback("criterium.superfluousCluster", distance, superfluousMerges.get(distance));
         }
 
         attachSolutionAndDendrogram();
@@ -198,7 +156,7 @@ public class EvaluationFeedbackBuilder {
             missingDataPoints.containsKey(distance);
     }
 
-    private void addDistanceHeaderToFeedback(BigDecimal distance) {
+    private void addDistanceHeader(BigDecimal distance) {
         String criterium = "criterium.distance";
         BigDecimal pointsForDistance = solutionMergeEvents.get(distance).pointsForDistance().negate();
         BigDecimal formatted = distance.stripTrailingZeros().scale() == 0 ? distance.stripTrailingZeros().setScale(1) : distance.stripTrailingZeros();
@@ -216,7 +174,7 @@ public class EvaluationFeedbackBuilder {
         }
     }
 
-    private void wrongOrderFeedbackGeneral() {
+    private void wrongOrderFeedback() {
         BigDecimal penalty = feedbackLevel == 3 ? task.getWrongOrderPenalty().negate() : null;
         addCriterion("criterium.order", penalty, "criterium.order.feedback");
     }
@@ -238,7 +196,7 @@ public class EvaluationFeedbackBuilder {
         }
     }
 
-    private void missingDistancesFeedback(List<BigDecimal> missingDistances) {
+    private void missingDistanceFeedback(List<BigDecimal> missingDistances) {
         String criterium = "criterium.missingDistance";
 
         if (!missingDistances.isEmpty()) {
@@ -269,7 +227,7 @@ public class EvaluationFeedbackBuilder {
         }
     }
 
-    private void mergeFeedback(String criterium, BigDecimal distance, List<HierarchicalClusteringMerge> mergeList) {
+    private void clusterFeedback(String criterium, BigDecimal distance, List<HierarchicalClusteringMerge> mergeList) {
         BigDecimal formatted = distance.stripTrailingZeros().scale() == 0 ? distance.stripTrailingZeros().setScale(1) : distance.stripTrailingZeros();
 
         switch (feedbackLevel) {
@@ -288,7 +246,7 @@ public class EvaluationFeedbackBuilder {
         }
     }
 
-    private void pointInClusterFeedback(String criterium, BigDecimal distance, Map<HierarchicalClusteringMerge, List<String>> map) {
+    private void dataPointFeedback(String criterium, BigDecimal distance, Map<HierarchicalClusteringMerge, List<String>> map) {
         BigDecimal formatted = distance.stripTrailingZeros().scale() == 0 ? distance.stripTrailingZeros().setScale(1) : distance.stripTrailingZeros();
 
         switch (feedbackLevel) {
@@ -315,7 +273,7 @@ public class EvaluationFeedbackBuilder {
 
             try {
                 String dendrogramSvg = new DendrogramSvgRenderer().render(task.getDendrogramModel());
-                byte[] dendrogramPng = new DendrogramImageExporter().export(DendrogramImageExporter.ImageFormat.PNG, dendrogramSvg);
+                byte[] dendrogramPng = new ImageExporter().export(ImageExporter.ImageFormat.PNG, dendrogramSvg);
                 String dendrogramBase64 = Base64.getEncoder().encodeToString(dendrogramPng);
 
                 String inlineImage = "<img src='data:image/png;base64," + dendrogramBase64 + "' />";

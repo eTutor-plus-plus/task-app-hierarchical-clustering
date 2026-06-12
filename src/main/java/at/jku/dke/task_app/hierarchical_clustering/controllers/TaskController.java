@@ -6,7 +6,7 @@ import at.jku.dke.task_app.hierarchical_clustering.dto.AssignmentTypeDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.HierarchicalClusteringTaskDto;
 import at.jku.dke.task_app.hierarchical_clustering.dto.ModifyHierarchicalClusteringTaskDto;
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.EvaluationFeedbackBuilder;
-import at.jku.dke.task_app.hierarchical_clustering.dendrogram.DendrogramImageExporter;
+import at.jku.dke.task_app.hierarchical_clustering.dendrogram.ImageExporter;
 import at.jku.dke.task_app.hierarchical_clustering.dendrogram.DendrogramSvgRenderer;
 import at.jku.dke.task_app.hierarchical_clustering.services.HierarchicalClusteringTaskService;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,7 +36,7 @@ public class TaskController extends BaseTaskController<HierarchicalClusteringTas
         String dendrogramSvg = new DendrogramSvgRenderer().render(task.getDendrogramModel());
         byte[] dendrogramPng;
         try {
-            dendrogramPng = new DendrogramImageExporter().export(DendrogramImageExporter.ImageFormat.PNG, dendrogramSvg);
+            dendrogramPng = new ImageExporter().export(ImageExporter.ImageFormat.PNG, dendrogramSvg);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

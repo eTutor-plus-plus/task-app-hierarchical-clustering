@@ -115,6 +115,14 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         createSolution(task);
     }
 
+    @Override
+    protected TaskModificationResponseDto mapToReturnData(HierarchicalClusteringTask task, boolean create) {
+        String descriptionDe = getTaskDescription(task, Locale.GERMAN);
+        String descriptionEn = getTaskDescription(task, Locale.ENGLISH);
+
+        return new TaskModificationResponseDto(descriptionDe, descriptionEn);
+    }
+
     private boolean needsRegeneration(HierarchicalClusteringTask task, ModifyHierarchicalClusteringTaskDto data) {
         boolean isDifferentN = data.nDataPoints() != task.getDistanceMatrix().getDistances().length;
         boolean hasAssignmentTypeChangedToCoordinates = task.getCoordinateSystem() == null && data.assignmentType() == AssignmentTypeDto.COORDINATES;
@@ -127,14 +135,6 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
                 !Objects.equals(data.coordinateSystem().getMaxY(), task.getCoordinateSystem().getMaxY()));
 
         return isDifferentN || hasAssignmentTypeChangedToCoordinates || hasAssignmentTypeChangedToMatrix || hasDistanceMetricChanged || haveAxisLengthsChanged;
-    }
-
-    @Override
-    protected TaskModificationResponseDto mapToReturnData(HierarchicalClusteringTask task, boolean create) {
-        String descriptionDe = getTaskDescription(task, Locale.GERMAN);
-        String descriptionEn = getTaskDescription(task, Locale.ENGLISH);
-
-        return new TaskModificationResponseDto(descriptionDe, descriptionEn);
     }
 
     private String getTaskDescription(HierarchicalClusteringTask task, Locale locale) {

@@ -14,12 +14,8 @@ public abstract class CoordinateGenerator implements Generator<List<Hierarchical
         return generate(n, 0, 10, 0, 10, random);
     }
 
-    public List<HierarchicalClusteringTask.CoordinatePoint> generate(int n, double length) {
-        return this.generate(n, length, length);
-    }
-
-    public List<HierarchicalClusteringTask.CoordinatePoint> generate(int n, double maxX, double maxY) {
-        return this.generate(n, 0, maxX, 0, maxY);
+    public List<HierarchicalClusteringTask.CoordinatePoint> generate(int n, double max) {
+        return this.generate(n, 0, max, 0, max);
     }
 
     public List<HierarchicalClusteringTask.CoordinatePoint> generate(int n, double minX, double maxX, double minY, double maxY) {

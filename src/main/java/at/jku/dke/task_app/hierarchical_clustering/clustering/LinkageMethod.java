@@ -39,14 +39,14 @@ public enum LinkageMethod {
         this.linkage = linkage;
     }
 
-    public BigDecimal distance(List<Integer> a, List<Integer> b, BigDecimal[][] dist) {
-        return linkage.distance(a, b, dist);
+    public BigDecimal linkage(List<Integer> a, List<Integer> b, BigDecimal[][] dist) {
+        return linkage.linkage(a, b, dist);
     }
 
 
     @FunctionalInterface
     private interface Linkage {
-        BigDecimal distance(List<Integer> a, List<Integer> b, BigDecimal[][] dist);
+        BigDecimal linkage(List<Integer> a, List<Integer> b, BigDecimal[][] dist);
     }
 
 }

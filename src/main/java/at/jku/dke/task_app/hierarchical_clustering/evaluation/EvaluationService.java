@@ -96,7 +96,7 @@ public class EvaluationService {
                 break;
             case DIAGNOSE, SUBMIT:
                 if (error == null) {
-                    awardedPoints = evaluateWithFeedback(task, inputMergeHistory);
+                    awardedPoints = gradeAndBuildFeedback(task, inputMergeHistory);
                     feedback = this.messageSource.getMessage(Objects.equals(awardedPoints, task.getMaxPoints()) ?
                         "correct" : awardedPoints.doubleValue() > 0 ? "partiallyCorrect": "incorrect", null, locale);
                 } else {
@@ -110,7 +110,7 @@ public class EvaluationService {
         return new GradingDto(task.getMaxPoints(), awardedPoints, feedback, criteria);
     }
 
-    private BigDecimal evaluateWithFeedback(HierarchicalClusteringTask task, SyntaxParser.MergeEventWrapper eventWrapper) {
+    private BigDecimal gradeAndBuildFeedback(HierarchicalClusteringTask task, SyntaxParser.MergeEventWrapper eventWrapper) {
         BigDecimal awardedPoints = BigDecimal.ZERO;
 
         SortedMap<BigDecimal, MergeEventAtDistance> solutionMergeEvents = buildEvaluationMergeHistoryForTask(task);
@@ -132,9 +132,9 @@ public class EvaluationService {
         SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> foundSolutionMerges = new TreeMap<>();
         SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> partiallyFoundSolutionMerges = new TreeMap<>();
 
-        SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> superfluousMerges = new TreeMap<>();
-        SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> redundantMerges = new TreeMap<>();
-        SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> missingMerges = new TreeMap<>();
+        SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> superfluousClusters = new TreeMap<>();
+        SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> redundantClusters = new TreeMap<>();
+        SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> missingClusters = new TreeMap<>();
 
         SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> missingDataPoints = new TreeMap<>();
         SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> superfluousDataPoints = new TreeMap<>();
@@ -163,7 +163,7 @@ public class EvaluationService {
                             foundSolutionMerges.get(distance).stream()
                                 .anyMatch(m -> m.getResult().getDataPoints().equals(inputMerge.getResult().getDataPoints()))) {
                             correct = false;
-                            redundantMerges.computeIfAbsent(distance, k -> new ArrayList<>()).add(inputMerge);
+                            redundantClusters.computeIfAbsent(distance, k -> new ArrayList<>()).add(inputMerge);
                         } else {
                             HierarchicalClusteringMerge solutionMerge = solutionMerges.stream()
                                 .filter(m -> m.getResult().getDataPoints().equals(inputMerge.getResult().getDataPoints()))
@@ -185,18 +185,18 @@ public class EvaluationService {
                     for (List<HierarchicalClusteringMerge> group : groupedByDataPoints.values()) {
                         if (group.size() > 1) {
                             List<HierarchicalClusteringMerge> redundant = group.subList(1, group.size());
-                            redundantMerges.computeIfAbsent(distance, k -> new ArrayList<>()).addAll(redundant);
+                            redundantClusters.computeIfAbsent(distance, k -> new ArrayList<>()).addAll(redundant);
                             incorrectMerges.removeAll(redundant);
                         }
                     }
 
                     for (HierarchicalClusteringMerge merge : incorrectMerges) {
-                        buildClusterFeedbackLists(
+                        buildDataPointFeedback(
                             merge,
                             solutionMerges,
                             foundSolutionMerges,
                             partiallyFoundSolutionMerges,
-                            superfluousMerges,
+                            superfluousClusters,
                             missingDataPoints,
                             superfluousDataPoints,
                             duplicateDataPoints);
@@ -209,7 +209,7 @@ public class EvaluationService {
                             (partiallyFoundSolutionMerges.get(distance) == null || (partiallyFoundSolutionMerges.get(distance) != null &&
                                 partiallyFoundSolutionMerges.get(distance).stream().noneMatch(m -> m != null && m.getResult().getDataPoints().equals(merge.getResult().getDataPoints()))))) {
                             correct = false;
-                            missingMerges.computeIfAbsent(distance, k -> new ArrayList<>()).add(merge);
+                            missingClusters.computeIfAbsent(distance, k -> new ArrayList<>()).add(merge);
                         }
                     }
                 }
@@ -235,9 +235,9 @@ public class EvaluationService {
             feedbackBuilder
                 .withWrongOrSuperfluousDistances(wrongOrSuperfluousDistances)
                 .withMissingDistances(missingDistances)
-                .withSuperfluousMerges(superfluousMerges)
-                .withRedundantMerges(redundantMerges)
-                .withMissingMerges(missingMerges)
+                .withSuperfluousMerges(superfluousClusters)
+                .withRedundantMerges(redundantClusters)
+                .withMissingMerges(missingClusters)
                 .withDuplicateDataPoints(duplicateDataPoints)
                 .withSuperfluousDataPoints(superfluousDataPoints)
                 .withMissingDataPoints(missingDataPoints)
@@ -247,64 +247,14 @@ public class EvaluationService {
         return awardedPoints.compareTo(BigDecimal.ZERO) >= 0 ? awardedPoints : BigDecimal.ZERO;
     }
 
-    public static SortedMap<BigDecimal, MergeEventAtDistance> buildEvaluationMergeHistoryForTask(HierarchicalClusteringTask task) {
-        SortedMap<BigDecimal, MergeEventAtDistance> mergeEvents = new TreeMap<>();
-        List<HierarchicalClusteringMerge> mergeHistory = task.getSolutionMergeHistory();
-        SortedSet<BigDecimal> distances = mergeHistory.stream()
-            .map(HierarchicalClusteringMerge::getDistance)
-            .sorted()
-            .collect(Collectors.toCollection(TreeSet::new));
-
-        for (BigDecimal distance : distances) {
-            BigDecimal pointsForDistance = BigDecimal.ZERO;
-
-            // add old merges to be inherited from previous distances
-            List<HierarchicalClusteringMerge> inheritedMerges = new ArrayList<>();
-            for (HierarchicalClusteringMerge merge : mergeHistory) {
-                if (merge.getDistance().compareTo(distance) < 0) {
-                    // build new merge to set new distance for evaluation
-                    HierarchicalClusteringMerge newMerge = new HierarchicalClusteringMerge();
-                    newMerge.setDistance(distance);
-                    newMerge.setTask(merge.getTask());
-                    newMerge.setId(merge.getId());
-                    newMerge.setResult(merge.getResult());
-                    newMerge.setSourceCluster1(merge.getSourceCluster1());
-                    newMerge.setSourceCluster2(merge.getSourceCluster2());
-                    inheritedMerges.add(newMerge);
-                }
-            }
-
-            // add new merges at this distance
-            List<HierarchicalClusteringMerge> newMerges = new ArrayList<>();
-            for (HierarchicalClusteringMerge merge : mergeHistory) {
-                if (merge.getDistance().compareTo(distance) == 0) {
-                    newMerges.add(merge);
-                    pointsForDistance = pointsForDistance.add(task.getPointsPerCorrectCluster());
-                }
-            }
-
-            // remove old merges that are merged into a new cluster at this distance
-            inheritedMerges.removeIf(inheritedMerge -> newMerges.stream().anyMatch(m ->
-                new HashSet<>(m.getResult().getDataPoints()).containsAll(inheritedMerge.getResult().getDataPoints())));
-            // remove merges that are contained in another inherited merge
-            inheritedMerges.removeIf(inheritedMerge -> inheritedMerges.stream().anyMatch(m ->
-                m.getResult().getDataPoints() != inheritedMerge.getResult().getDataPoints() &&
-                    new HashSet<>(m.getResult().getDataPoints()).containsAll(inheritedMerge.getResult().getDataPoints())));
-
-            mergeEvents.put(distance, new MergeEventAtDistance(newMerges, inheritedMerges, pointsForDistance));
-        }
-
-        return mergeEvents;
-    }
-
-    private void buildClusterFeedbackLists(HierarchicalClusteringMerge inputMerge,
-                                           List<HierarchicalClusteringMerge> solutionMerges,
-                                           SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> foundSolutionMerges,
-                                           SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> partiallyFoundSolutionMerges,
-                                           SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> superfluousMerges,
-                                           SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> missingDataPoints,
-                                           SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> superfluousDataPoints,
-                                           SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> duplicateDataPoints) {
+    private void buildDataPointFeedback(HierarchicalClusteringMerge inputMerge,
+                                        List<HierarchicalClusteringMerge> solutionMerges,
+                                        SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> foundSolutionMerges,
+                                        SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> partiallyFoundSolutionMerges,
+                                        SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> superfluousMerges,
+                                        SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> missingDataPoints,
+                                        SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> superfluousDataPoints,
+                                        SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> duplicateDataPoints) {
 
         solutionMerges.removeAll(foundSolutionMerges.values().stream().flatMap(Collection::stream).toList());
         solutionMerges.removeAll(partiallyFoundSolutionMerges.values().stream().flatMap(Collection::stream).toList());
@@ -358,6 +308,56 @@ public class EvaluationService {
         if (!duplicates.isEmpty()) {
             duplicateDataPoints.computeIfAbsent(inputMerge.getDistance(), k -> new HashMap<>()).put(inputMerge, duplicates);
         }
+    }
+
+    public static SortedMap<BigDecimal, MergeEventAtDistance> buildEvaluationMergeHistoryForTask(HierarchicalClusteringTask task) {
+        SortedMap<BigDecimal, MergeEventAtDistance> mergeEvents = new TreeMap<>();
+        List<HierarchicalClusteringMerge> mergeHistory = task.getSolutionMergeHistory();
+        SortedSet<BigDecimal> distances = mergeHistory.stream()
+            .map(HierarchicalClusteringMerge::getDistance)
+            .sorted()
+            .collect(Collectors.toCollection(TreeSet::new));
+
+        for (BigDecimal distance : distances) {
+            BigDecimal pointsForDistance = BigDecimal.ZERO;
+
+            // add old merges to be inherited from previous distances
+            List<HierarchicalClusteringMerge> inheritedMerges = new ArrayList<>();
+            for (HierarchicalClusteringMerge merge : mergeHistory) {
+                if (merge.getDistance().compareTo(distance) < 0) {
+                    // build new merge to set new distance for evaluation
+                    HierarchicalClusteringMerge newMerge = new HierarchicalClusteringMerge();
+                    newMerge.setDistance(distance);
+                    newMerge.setTask(merge.getTask());
+                    newMerge.setId(merge.getId());
+                    newMerge.setResult(merge.getResult());
+                    newMerge.setSourceCluster1(merge.getSourceCluster1());
+                    newMerge.setSourceCluster2(merge.getSourceCluster2());
+                    inheritedMerges.add(newMerge);
+                }
+            }
+
+            // add new merges at this distance
+            List<HierarchicalClusteringMerge> newMerges = new ArrayList<>();
+            for (HierarchicalClusteringMerge merge : mergeHistory) {
+                if (merge.getDistance().compareTo(distance) == 0) {
+                    newMerges.add(merge);
+                    pointsForDistance = pointsForDistance.add(task.getPointsPerCorrectCluster());
+                }
+            }
+
+            // remove old merges that are merged into a new cluster at this distance
+            inheritedMerges.removeIf(inheritedMerge -> newMerges.stream().anyMatch(m ->
+                new HashSet<>(m.getResult().getDataPoints()).containsAll(inheritedMerge.getResult().getDataPoints())));
+            // remove merges that are contained in another inherited merge
+            inheritedMerges.removeIf(inheritedMerge -> inheritedMerges.stream().anyMatch(m ->
+                m.getResult().getDataPoints() != inheritedMerge.getResult().getDataPoints() &&
+                    new HashSet<>(m.getResult().getDataPoints()).containsAll(inheritedMerge.getResult().getDataPoints())));
+
+            mergeEvents.put(distance, new MergeEventAtDistance(newMerges, inheritedMerges, pointsForDistance));
+        }
+
+        return mergeEvents;
     }
 
     public record MergeEventAtDistance(

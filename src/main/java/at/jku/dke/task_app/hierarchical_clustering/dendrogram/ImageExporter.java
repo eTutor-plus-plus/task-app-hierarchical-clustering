@@ -3,7 +3,6 @@ package at.jku.dke.task_app.hierarchical_clustering.dendrogram;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.ImageTranscoder;
-import org.apache.batik.transcoder.image.JPEGTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 
 import java.io.ByteArrayInputStream;
@@ -11,7 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-public class DendrogramImageExporter {
+public class ImageExporter {
 
     public enum ImageFormat {
         PNG(new PNGTranscoder());

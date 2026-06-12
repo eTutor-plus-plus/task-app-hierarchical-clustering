@@ -5,9 +5,9 @@ import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClu
 
 import java.util.*;
 
-public class SolutionFormatter {
+public class ClusteringSolutionFormatter {
 
-    private SolutionFormatter() {}
+    private ClusteringSolutionFormatter() {}
 
     public static HierarchicalClusteringCluster mergeCluster(HierarchicalClusteringCluster left, HierarchicalClusteringCluster right) {
         List<String> combined = new ArrayList<>();

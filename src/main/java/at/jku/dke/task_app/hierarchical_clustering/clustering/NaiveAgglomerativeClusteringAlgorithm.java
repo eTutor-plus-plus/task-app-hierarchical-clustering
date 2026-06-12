@@ -31,7 +31,7 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
             clusters.add(singleton);
         }
 
-        List<SolutionFormatter.RawMerge> rawMerges = new ArrayList<>(n - 1);
+        List<ClusteringSolutionFormatter.RawMerge> rawMerges = new ArrayList<>(n - 1);
 
         for (int step = 1; step < n; step++) {
             int size = clusters.size();
@@ -55,7 +55,7 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
             // 2. Record the raw merge
             List<String> leftLabels  = indicesToLabels(clusters.get(clusterA), input.getLabels());
             List<String> rightLabels = indicesToLabels(clusters.get(clusterB), input.getLabels());
-            rawMerges.add(new SolutionFormatter.RawMerge(
+            rawMerges.add(new ClusteringSolutionFormatter.RawMerge(
                 leftLabels, rightLabels, minDist, step));
 
             // 3. Merge cluster B into A (member indices)
@@ -68,7 +68,7 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
 
             for (int i = 0; i < newSize; i++) {
                 for (int j = i + 1; j < newSize; j++) {
-                    BigDecimal d = linkage.distance(clusters.get(i), clusters.get(j), originalMatrix);
+                    BigDecimal d = linkage.linkage(clusters.get(i), clusters.get(j), originalMatrix);
                     newDist[i][j] = d;
                     newDist[j][i] = d;
                 }
@@ -77,7 +77,7 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
             workingMatrix = newDist;
         }
 
-        return SolutionFormatter.format(rawMerges);
+        return ClusteringSolutionFormatter.format(rawMerges);
     }
 
     private BigDecimal[][] deepCopy(BigDecimal[][] sourceMatrix, int n) {
