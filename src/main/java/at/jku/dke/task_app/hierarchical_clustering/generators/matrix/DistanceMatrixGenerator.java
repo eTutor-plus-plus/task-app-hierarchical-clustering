@@ -1,7 +1,7 @@
 package at.jku.dke.task_app.hierarchical_clustering.generators.matrix;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
-import at.jku.dke.task_app.hierarchical_clustering.generators.Generator;
+import at.jku.dke.task_app.hierarchical_clustering.generators.DataGenerator;
 import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMatrix;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 
-public class DistanceMatrixGenerator implements Generator<HierarchicalClusteringTask.DistanceMatrix> {
+public class DistanceMatrixGenerator implements DataGenerator<HierarchicalClusteringTask.DistanceMatrix> {
 
     @Override
 	public HierarchicalClusteringTask.DistanceMatrix generate(int nDataPoints, Random random) {

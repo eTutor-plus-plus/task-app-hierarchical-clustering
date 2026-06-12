@@ -64,10 +64,10 @@ public class EvaluationService {
         BigDecimal awardedPoints = BigDecimal.ZERO;
         String feedback;
 
-        SyntaxParser parser = new SyntaxParser(this.messageSource, locale);
+        SubmissionInputParser parser = new SubmissionInputParser(this.messageSource, locale);
 
         // parse input
-        SyntaxParser.MergeEventWrapper inputMergeHistory = null;
+        SubmissionInputParser.MergeEventWrapper inputMergeHistory = null;
         IllegalArgumentException error = null;
         try {
             inputMergeHistory = parser.parse(submission.submission().input());
@@ -110,7 +110,7 @@ public class EvaluationService {
         return new GradingDto(task.getMaxPoints(), awardedPoints, feedback, criteria);
     }
 
-    private BigDecimal gradeAndBuildFeedback(HierarchicalClusteringTask task, SyntaxParser.MergeEventWrapper eventWrapper) {
+    private BigDecimal gradeAndBuildFeedback(HierarchicalClusteringTask task, SubmissionInputParser.MergeEventWrapper eventWrapper) {
         BigDecimal awardedPoints = BigDecimal.ZERO;
 
         SortedMap<BigDecimal, MergeEventAtDistance> solutionMergeEvents = buildEvaluationMergeHistoryForTask(task);

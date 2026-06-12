@@ -11,12 +11,12 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class SyntaxParserTest {
+class SubmissionInputParserTest {
 
     private final String criterium = "criterium.syntax.";
     private MessageSource messageSource;
-    private SyntaxParser parserEnglish;
-    private SyntaxParser parserGerman;
+    private SubmissionInputParser parserEnglish;
+    private SubmissionInputParser parserGerman;
 
     @BeforeEach
     void setUp() {
@@ -26,8 +26,8 @@ class SyntaxParserTest {
         messageSource.setDefaultEncoding("UTF-8");
         messageSource.setFallbackToSystemLocale(false);
         this.messageSource = messageSource;
-        parserEnglish = new SyntaxParser(messageSource, Locale.ENGLISH);
-        parserGerman = new SyntaxParser(messageSource, Locale.GERMAN);
+        parserEnglish = new SubmissionInputParser(messageSource, Locale.ENGLISH);
+        parserGerman = new SubmissionInputParser(messageSource, Locale.GERMAN);
     }
 
     @Test
@@ -50,8 +50,8 @@ class SyntaxParserTest {
         """;
 
         // Act
-        SyntaxParser.MergeEventWrapper fromSorted = parserEnglish.parse(inputSorted);
-        SyntaxParser.MergeEventWrapper fromUnsorted = parserEnglish.parse(inputUnsorted);
+        SubmissionInputParser.MergeEventWrapper fromSorted = parserEnglish.parse(inputSorted);
+        SubmissionInputParser.MergeEventWrapper fromUnsorted = parserEnglish.parse(inputUnsorted);
 
         // Assert
         assertTrue(fromSorted.isCorrectOrder());
@@ -72,7 +72,7 @@ class SyntaxParserTest {
         """;
 
         // Act
-        SyntaxParser.MergeEventWrapper result = parserEnglish.parse(input);
+        SubmissionInputParser.MergeEventWrapper result = parserEnglish.parse(input);
 
         // Assert
         assertEquals(3, result.mergeEvents().size());
@@ -93,7 +93,7 @@ class SyntaxParserTest {
         """;
 
         // Act
-        SyntaxParser.MergeEventWrapper eventWrapper = parserEnglish.parse(input);
+        SubmissionInputParser.MergeEventWrapper eventWrapper = parserEnglish.parse(input);
         Map<BigDecimal, EvaluationService.MergeEventAtDistance> result = eventWrapper.mergeEvents();
 
         // Assert
@@ -118,7 +118,7 @@ class SyntaxParserTest {
         """;
 
         // Act
-        SyntaxParser.MergeEventWrapper eventWrapper = parserEnglish.parse(input);
+        SubmissionInputParser.MergeEventWrapper eventWrapper = parserEnglish.parse(input);
         Map<BigDecimal, EvaluationService.MergeEventAtDistance> result = eventWrapper.mergeEvents();
 
         // Assert

@@ -1,13 +1,13 @@
 package at.jku.dke.task_app.hierarchical_clustering.generators.coordinates;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
-import at.jku.dke.task_app.hierarchical_clustering.generators.Generator;
+import at.jku.dke.task_app.hierarchical_clustering.generators.DataGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public abstract class CoordinateGenerator implements Generator<List<HierarchicalClusteringTask.CoordinatePoint>> {
+public abstract class CoordinateGenerator implements DataGenerator<List<HierarchicalClusteringTask.CoordinatePoint>> {
 
     @Override
     public List<HierarchicalClusteringTask.CoordinatePoint> generate(int n, Random random) {

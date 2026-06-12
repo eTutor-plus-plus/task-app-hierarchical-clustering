@@ -3,7 +3,7 @@ package at.jku.dke.task_app.hierarchical_clustering.clustering;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringMerge;
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
 import at.jku.dke.task_app.hierarchical_clustering.evaluation.EvaluationService;
-import at.jku.dke.task_app.hierarchical_clustering.evaluation.SyntaxParser;
+import at.jku.dke.task_app.hierarchical_clustering.evaluation.SubmissionInputParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +18,7 @@ class NaiveAgglomerativeClusteringAlgorithmTest {
     private HierarchicalClusteringTask.DistanceMatrix matrix;
     private HierarchicalClusteringAlgorithm singleLinkageClustering;
     private HierarchicalClusteringAlgorithm completeLinkageClustering;
-    private SyntaxParser parser;
+    private SubmissionInputParser parser;
 
     @BeforeEach
     void setUp() {
@@ -39,7 +39,7 @@ class NaiveAgglomerativeClusteringAlgorithmTest {
         this.singleLinkageClustering = new NaiveAgglomerativeClusteringAlgorithm(LinkageMethod.SINGLE);
         this.completeLinkageClustering = new NaiveAgglomerativeClusteringAlgorithm(LinkageMethod.COMPLETE);
 
-        this.parser = new SyntaxParser(null, null);
+        this.parser = new SubmissionInputParser(null, null);
     }
 
 //    @Test

@@ -2,7 +2,7 @@ package at.jku.dke.task_app.hierarchical_clustering.generators;
 
 import java.util.Random;
 
-public interface Generator<T> {
+public interface DataGenerator<T> {
 
     default T generate(int n) {
         return generate(n, new Random());

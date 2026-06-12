@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class SyntaxParser {
+public class SubmissionInputParser {
 
     private final MessageSource messageSource;
     private final Locale locale;
@@ -18,7 +18,7 @@ public class SyntaxParser {
     private int stepNumber;
     private BigDecimal previousDistance;
 
-    public SyntaxParser(MessageSource messageSource, Locale locale) {
+    public SubmissionInputParser(MessageSource messageSource, Locale locale) {
         this.messageSource = messageSource;
         this.locale = locale;
     }
