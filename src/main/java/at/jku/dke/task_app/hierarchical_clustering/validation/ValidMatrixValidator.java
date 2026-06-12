@@ -1,6 +1,8 @@
 package at.jku.dke.task_app.hierarchical_clustering.validation;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
+import at.jku.dke.task_app.hierarchical_clustering.dto.ModifyHierarchicalClusteringTaskDto;
+import at.jku.dke.task_app.hierarchical_clustering.generators.matrix.DistanceMatrixGenerator;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
@@ -10,11 +12,20 @@ import org.springframework.context.MessageSource;
 import java.math.BigDecimal;
 import java.util.*;
 
+/**
+ * Custom validator for distance matrices in {@link ModifyHierarchicalClusteringTaskDto}
+ * or calculated by {@link DistanceMatrixGenerator}.
+ * Validates whether a distance matrix is of size n x n, has 0-diagonal and symmetry
+ * and does not contain negative distance values.
+ */
 public class ValidMatrixValidator implements ConstraintValidator<ValidMatrix, HierarchicalClusteringTask.DistanceMatrix> {
 
     @Autowired
     private MessageSource messageSource;
 
+    /**
+     * Creates a new instance of class {@linkplain ValidMatrixValidator}.
+     */
     public ValidMatrixValidator() {}
 
     @Override
@@ -63,6 +74,13 @@ public class ValidMatrixValidator implements ConstraintValidator<ValidMatrix, Hi
         return true;
     }
 
+    /**
+     * Helper method to insert a specified message into the default message for more exact error feedback.
+     *
+     * @param context           context in which the constraint is evaluated.
+     * @param messageKey        the key/code of the message.
+     * @param messageParameters optional parameters for the message.
+     */
     private void putMessage(ConstraintValidatorContext context, String messageKey, Object... messageParameters) {
         if (context != null) {
             HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);

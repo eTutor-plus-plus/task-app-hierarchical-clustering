@@ -7,10 +7,23 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementation of {@link HierarchicalClusteringAlgorithm} for agglomerative hierarchical
+ * clustering.
+ * <p>
+ * This implementation is naive, i.e. it strictly follows the general agglomerative clustering
+ * scheme. The algorithm therefore excludes ties as it does not have a tiebreaker-strategy to deal
+ * with multiple possible solutions.
+ */
 public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalClusteringAlgorithm {
 
     private final LinkageMethod linkage;
 
+    /**
+     * Creates a new instance of class {@linkplain NaiveAgglomerativeClusteringAlgorithm}.
+     *
+     * @param linkage The linkage method to be used for clustering.
+     */
     public NaiveAgglomerativeClusteringAlgorithm(LinkageMethod linkage) {
         this.linkage = linkage;
     }
@@ -80,6 +93,14 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
         return ClusteringSolutionFormatter.format(rawMerges);
     }
 
+    /**
+     * Helper method that creates a deep copy of a distance matrix for the clustering
+     * algorithm to work on.
+     *
+     * @param sourceMatrix The original distance matrix.
+     * @param n            The number of data points.
+     * @return A copy of the original distance matrix.
+     */
     private BigDecimal[][] deepCopy(BigDecimal[][] sourceMatrix, int n) {
         BigDecimal[][] copy = new BigDecimal[n][n];
 
@@ -90,6 +111,14 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
         return copy;
     }
 
+    /**
+     * Helper method to (re-)construct cluster labels from the data point indices
+     * (used for bookkeeping) that are contained in a cluster merged by the algorithm.
+     *
+     * @param indices The indices of the data points contained in a cluster.
+     * @param labels  All data point labels.
+     * @return The list of data point labels in a cluster.
+     */
     private List<String> indicesToLabels(List<Integer> indices, List<String> labels) {
         List<String> result = new ArrayList<>(indices.size());
 
@@ -100,6 +129,11 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
         return result;
     }
 
+    /**
+     * Helper method that checks for ties in the current version of a distance matrix.
+     *
+     * @param workingMatrix The matrix to be checked for ties.
+     */
     private void checkForTiebreaker(BigDecimal[][] workingMatrix) {
         int size = workingMatrix.length;
 

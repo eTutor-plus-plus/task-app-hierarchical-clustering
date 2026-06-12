@@ -8,6 +8,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 
+/**
+ * A generator that can generate a list of data points with their coordinates.
+ * Coordinates are generated in a way that they fit all constraints after
+ * calculating the distances with manhattan distance.
+ */
 public class ManhattanCoordinateGenerator extends CoordinateGenerator {
 
 
@@ -92,16 +97,44 @@ public class ManhattanCoordinateGenerator extends CoordinateGenerator {
         );
     }
 
+    /**
+     * Spring component responsible for injecting configuration values
+     * into static fields for access.
+     * <p>
+     * Separate config for the coordinate generators as different
+     * configuration of values may be favourable (e.g. enabling
+     * more restarts for Manhattan coordinate generation because
+     * it takes generally less time and therefore more runs are
+     * feasible compared to Euclidean coordinate generation)
+     */
     @Component
     public static class Config {
         private static int maxRestarts;
         private static int maxAttemptsPerPoint;
 
+        /**
+         * Sets the {@linkplain #maxRestarts} value from the Spring property
+         * {@code app.generation.coordinates.manhattan.restarts}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
+         *
+         * @param maxRestarts The maximum amount of restarts for trying coordinate generation.
+         */
         @Value("${app.generation.coordinates.manhattan.restarts}")
         public void setMaxRestarts(int maxRestarts) {
             Config.maxRestarts = maxRestarts;
         }
 
+        /**
+         * Sets the {@linkplain #maxAttemptsPerPoint} value from the Spring property
+         * {@code app.generation.coordinates.manhattan.max-attempts-per-point}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
+         *
+         * @param maxAttemptsPerPoint The maximum amount of retries for single points during generation.
+         */
         @Value("${app.generation.coordinates.manhattan.max-attempts-per-point}")
         public void setMaxAttemptsPerPoint(int maxAttemptsPerPoint) {
             Config.maxAttemptsPerPoint = maxAttemptsPerPoint;

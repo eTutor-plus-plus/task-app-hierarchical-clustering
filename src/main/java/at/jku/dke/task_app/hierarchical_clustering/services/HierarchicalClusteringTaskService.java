@@ -123,6 +123,26 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         return new TaskModificationResponseDto(descriptionDe, descriptionEn);
     }
 
+    /**
+     * Helper method to determine whether a task needs to be regenerated on update.
+     * <p>
+     * Returns {@code true} in any of the following cases:
+     *
+     * <ul>
+     *     <li>Assignment type has changed
+     *     <li>Distance metric has changed (because coordinates are generated
+     *         differently depending on the metric to fulfill constraints and therefore need to ge regenerated)
+     *     <li>Number of data points has changed
+     *     <li>The axes of the coordinate system have changed
+     * </ul>
+     *
+     * If this method returns {@code true}, the coordinate list and/or distance matrix
+     * should be regenerated to reflect the changes made by users.
+     *
+     * @param task The task which should be updated.
+     * @param data The data to update the task with.
+     * @return {@code true} if any changes have been made that warrant regeneration of coordinates/distance matrix.
+     */
     private boolean needsRegeneration(HierarchicalClusteringTask task, ModifyHierarchicalClusteringTaskDto data) {
         boolean isDifferentN = data.nDataPoints() != task.getDistanceMatrix().getDistances().length;
         boolean hasAssignmentTypeChangedToCoordinates = task.getCoordinateSystem() == null && data.assignmentType() == AssignmentTypeDto.COORDINATES;
@@ -137,6 +157,13 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         return isDifferentN || hasAssignmentTypeChangedToCoordinates || hasAssignmentTypeChangedToMatrix || hasDistanceMetricChanged || haveAxisLengthsChanged;
     }
 
+    /**
+     * Helper method to build the default task description for the given locale.
+     *
+     * @param task   The task for which to build the description.
+     * @param locale The locale/language for the description.
+     * @return The default task description in the specified locale/language.
+     */
     private String getTaskDescription(HierarchicalClusteringTask task, Locale locale) {
         String algorithm = this.messageSource.getMessage("description.agglomerative", null, locale);
         String linkageMethod = this.messageSource.getMessage("description." + task.getLinkageMethod().toString().toLowerCase(), null, locale);
@@ -165,6 +192,15 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         return this.messageSource.getMessage("description.general", args, locale);
     }
 
+    /**
+     * Additional validation on top of custom validators for validating certain inputs.
+     * <p>
+     * Checks whether the number of data points is at least 2 (because tasks are pointless
+     * otherwise), as well as whether the set max points correspond to the expected value
+     * (evaluation would break otherwise).
+     *
+     * @param modifyTaskDto The new task data to be validated.
+     */
     private void validateAdditional(ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
         int n = modifyTaskDto.additionalData().nDataPoints();
 
@@ -181,6 +217,17 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         }
     }
 
+    /**
+     * Helper method to generate task data when creating or updating tasks.
+     * <p>
+     * Generates either a list of coordinates or a distance matrix, depending on
+     * the assignment type. If coordinates are generated, a corresponding distance
+     * matrix will be calculated from those coordinates as well.
+     *
+     * @param task          The task for which to generate data for.
+     * @param modifyTaskDto The new task data used to determine
+     *                      what needs to be generated/calculated and how.
+     */
     private void generateTaskData(HierarchicalClusteringTask task, ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
         if (modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.COORDINATES) {
             CoordinateGenerator coordinateGenerator;
@@ -225,6 +272,12 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         }
     }
 
+    /**
+     * Helper method to compute and persist a solution and the corresponding dendrogram
+     * for the given task.
+     *
+     * @param task The task for which to compute a solution for.
+     */
     private void createSolution(HierarchicalClusteringTask task) {
         List<HierarchicalClusteringMerge> solutionMergeHistory = new NaiveAgglomerativeClusteringAlgorithm(task.getLinkageMethod()).cluster(task.getDistanceMatrix());
 
@@ -251,6 +304,13 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
     }
 
 
+    /**
+     * Helper method to format the list of coordinates into an HTML table for
+     * displaying in the task description.
+     *
+     * @param points The list of coordinates.
+     * @return The coordinate list formatted as an HTML table.
+     */
     private String getCoordinatesAsHtmlTable(List<HierarchicalClusteringTask.CoordinatePoint> points) {
         StringBuilder html = new StringBuilder();
 
@@ -275,6 +335,13 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         return html.toString();
     }
 
+    /**
+     * Helper method to formate the distance matrix into an HTML table for
+     * displaying in the task description.
+     *
+     * @param matrix The distance matrix.
+     * @return The matrix formatted as an HTML table.
+     */
     private String getMatrixAsHtmlTable(HierarchicalClusteringTask.DistanceMatrix matrix) {
         StringBuilder html = new StringBuilder();
         List<String> labels = matrix.getLabels();

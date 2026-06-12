@@ -13,6 +13,9 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Builder to construct feedback for students from the evaluation.
+ */
 public class EvaluationFeedbackBuilder {
 
     private final HierarchicalClusteringTask task;
@@ -36,6 +39,15 @@ public class EvaluationFeedbackBuilder {
     SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> superfluousDataPoints;
     SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> duplicateDataPoints;
 
+    /**
+     * Creates a new instance of class {@linkplain EvaluationFeedbackBuilder}.
+     *
+     * @param task          The task.
+     * @param messageSource The message source for building messages.
+     * @param locale        The locale/language for messages.
+     * @param feedbackLevel The feedback level for this submission.
+     * @param criteria      The list of feedback criteria.
+     */
     public EvaluationFeedbackBuilder(HierarchicalClusteringTask task, SortedMap<BigDecimal, EvaluationService.MergeEventAtDistance> solutionMergeEvents,
                                      MessageSource messageSource, Locale locale, int feedbackLevel, List<CriterionDto> criteria) {
         this.task = task;
@@ -46,51 +58,109 @@ public class EvaluationFeedbackBuilder {
         this.criteria = criteria;
     }
 
+    /**
+     * Sets wrong order to true to include the associated message in the feedback.
+     *
+     * @return This builder for chaining.
+     */
     public EvaluationFeedbackBuilder withWrongOrderGeneral() {
         isWrongOrder = true;
         return this;
     }
 
+    /**
+     * Sets the register of wrong or superfluous distances to include associated messages in the feedback.
+     *
+     * @param wrongOrSuperfluousDistances The register of wrong or superfluous distances.
+     * @return This builder for chaining.
+     */
     public EvaluationFeedbackBuilder withWrongOrSuperfluousDistances(List<BigDecimal> wrongOrSuperfluousDistances) {
         this.wrongOrSuperfluousDistances = wrongOrSuperfluousDistances;
         return this;
     }
 
+    /**
+     * Sets the register of missing distances to include associated messages in the feedback.
+     *
+     * @param missingDistances    The register of missing distances.
+     * @return This builder for chaining.
+     */
     public EvaluationFeedbackBuilder withMissingDistances(List<BigDecimal> missingDistances) {
         this.missingDistances = missingDistances;
         return this;
     }
 
+    /**
+     * Sets the register of superfluous merges/clusters to include associated messages in the feedback.
+     *
+     * @param superfluousMerges The register of superfluous merges/clusters.
+     * @return This builder for chaining.
+     */
     public EvaluationFeedbackBuilder withSuperfluousMerges(SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> superfluousMerges) {
         this.superfluousMerges = superfluousMerges;
         return this;
     }
 
+    /**
+     * Sets the register for redundant merges/clusters to include associated messages in the feedback.
+     *
+     * @param redundantMerges The register of redundant merges/clusters.
+     * @return This builder for chaining.
+     */
     public EvaluationFeedbackBuilder withRedundantMerges(SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> redundantMerges) {
         this.redundantMerges = redundantMerges;
         return this;
     }
 
+    /**
+     * Sets the register for missing merges/clusters to include associated messages in the feedback.
+     *
+     * @param missingMerges The register of missing merges/clusters.
+     * @return This builder for chaining.
+     */
     public EvaluationFeedbackBuilder withMissingMerges(SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> missingMerges) {
         this.missingMerges = missingMerges;
         return this;
     }
 
+    /**
+     * Sets the register for missing data points in clusters to include associated messages in the feedback.
+     *
+     * @param missingDataPoints The register of missing data points in clusters.
+     * @return This builder for chaining.
+     */
     public EvaluationFeedbackBuilder withMissingDataPoints(SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> missingDataPoints) {
         this.missingDataPoints = missingDataPoints;
         return this;
     }
 
+    /**
+     * Sets the register for superfluous data points in clusters to include associated messages in the feedback.
+     *
+     * @param superfluousDataPoints The register of superfluous data points in clusters.
+     * @return This builder for chaining.
+     */
     public EvaluationFeedbackBuilder withSuperfluousDataPoints(SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> superfluousDataPoints) {
         this.superfluousDataPoints = superfluousDataPoints;
         return this;
     }
 
+    /**
+     * Sets the register for duplicate/redundant data points in clusters to include associated messages in the feedback.
+     *
+     * @param duplicateDataPoints The register of duplicate/redundant data points in clusters.
+     * @return This builder for chaining.
+     */
     public EvaluationFeedbackBuilder withDuplicateDataPoints(SortedMap<BigDecimal, Map<HierarchicalClusteringMerge, List<String>>> duplicateDataPoints) {
         this.duplicateDataPoints = duplicateDataPoints;
         return this;
     }
 
+    /**
+     * Builds feedback messages and adds them to the list of feedback criteria grouped
+     * by distance, with the option to include a header for feedback levels 1 and 2 (is
+     * always included in level 3 to display point deductions correctly).
+     */
     public void feedbackGroupedByDistance() {
         if (feedbackLevel <= 0) {
             return;
@@ -147,6 +217,15 @@ public class EvaluationFeedbackBuilder {
         attachSolutionAndDendrogram();
     }
 
+    /**
+     * Helper method to determine whether any mistakes have been found
+     * in the submission at the given distance by checking all registers
+     * on whether they contain an entry for said distance.
+     *
+     * @param distance The distance to be checked for.
+     * @return {@code true}, if any register has at least one entry for the
+     *         given distance.
+     */
     private boolean hasFeedback(BigDecimal distance) {
         return superfluousMerges.containsKey(distance) ||
             redundantMerges.containsKey(distance) ||
@@ -156,6 +235,15 @@ public class EvaluationFeedbackBuilder {
             missingDataPoints.containsKey(distance);
     }
 
+    /**
+     * Helper method for adding a header for a distance to group feedback messages.
+     * <p>
+     * Should always be added for feedback level 3 to allow for displaying point
+     * deductions in the feedback (as multiple errors at a distance still lead to
+     * the same deduction it needs to be grouped).
+     *
+     * @param distance The distance for which the header should be added to the feedback.
+     */
     private void addDistanceHeader(BigDecimal distance) {
         String criterium = "criterium.distance";
         BigDecimal pointsForDistance = solutionMergeEvents.get(distance).pointsForDistance().negate();
@@ -174,11 +262,20 @@ public class EvaluationFeedbackBuilder {
         }
     }
 
+    /**
+     * Helper method for adding the feedback message for wrong ordering of a submission.
+     */
     private void wrongOrderFeedback() {
         BigDecimal penalty = feedbackLevel == 3 ? task.getWrongOrderPenalty().negate() : null;
         addCriterion("criterium.order", penalty, "criterium.order.feedback");
     }
 
+    /**
+     * Helper method for adding feedback messages for wrong or superfluous distances
+     * from the register depending on the feedback level.
+     *
+     * @param wrongOrRedundantDistances The register of wrong or superfluous distances.
+     */
     private void wrongOrSuperfluousDistanceFeedback(List<BigDecimal> wrongOrRedundantDistances) {
         String criterium = "criterium.distance";
 
@@ -196,6 +293,12 @@ public class EvaluationFeedbackBuilder {
         }
     }
 
+    /**
+     * Helper method for adding feedback messages for missing distances
+     * from the register depending on the feedback level.
+     *
+     * @param missingDistances The register of missing distances.
+     */
     private void missingDistanceFeedback(List<BigDecimal> missingDistances) {
         String criterium = "criterium.missingDistance";
 
@@ -227,6 +330,16 @@ public class EvaluationFeedbackBuilder {
         }
     }
 
+    /**
+     * Helper method for adding different kinds of feedback messages concerning whole merges/clusters
+     * from a register depending on the feedback level.
+     * <p>
+     * Used as a helper for superfluous, redundant and missing cluster feedback.
+     *
+     * @param criterium The type of feedback.
+     * @param distance  The distance where the errors occur.
+     * @param mergeList The register of merges/clusters that were wrong.
+     */
     private void clusterFeedback(String criterium, BigDecimal distance, List<HierarchicalClusteringMerge> mergeList) {
         BigDecimal formatted = distance.stripTrailingZeros().scale() == 0 ? distance.stripTrailingZeros().setScale(1) : distance.stripTrailingZeros();
 
@@ -246,6 +359,16 @@ public class EvaluationFeedbackBuilder {
         }
     }
 
+    /**
+     * Helper method for adding different kinds of feedback messages concerning data points
+     * in merges/clusters from a register depending on the feedback level.
+     * <p>
+     * Used as a helper for superfluous, duplicate/redundant and missing data points feedback.
+     *
+     * @param criterium The type of feedback.
+     * @param distance  The distance where the errors occur.
+     * @param map       The registers of data points that were wrong.
+     */
     private void dataPointFeedback(String criterium, BigDecimal distance, Map<HierarchicalClusteringMerge, List<String>> map) {
         BigDecimal formatted = distance.stripTrailingZeros().scale() == 0 ? distance.stripTrailingZeros().setScale(1) : distance.stripTrailingZeros();
 
@@ -266,6 +389,10 @@ public class EvaluationFeedbackBuilder {
         }
     }
 
+    /**
+     * Helper method to attach the sample solution in string form and the dendrogram
+     * as an image in PNG format to the feedback for feedback level 3.
+     */
     private void attachSolutionAndDendrogram() {
         if (feedbackLevel == 3) {
             String solution = buildSolutionString(task);
@@ -284,6 +411,12 @@ public class EvaluationFeedbackBuilder {
         }
     }
 
+    /**
+     * Builds a formatted string from a tasks solution for displaying in feedback or the UI.
+     *
+     * @param task The task for which to build the formatted solution.
+     * @return The formatted solution of a task.
+     */
     public static String buildSolutionString(HierarchicalClusteringTask task) {
         SortedMap<BigDecimal, EvaluationService.MergeEventAtDistance> mergeEventHistory = new TreeMap<>(EvaluationService.buildEvaluationMergeHistoryForTask(task));
         StringBuilder solutionBuilder = new StringBuilder();
@@ -309,18 +442,53 @@ public class EvaluationFeedbackBuilder {
         return solutionBuilder.toString();
     }
 
+    /**
+     * Helper method for adding a feedback message with parameters to the list of criteria.
+     *
+     * @param criterionName The key/code of the criterion name message.
+     * @param feedback      The key/code of the criterion feedback message.
+     * @param args          Optional message parameters.
+     */
     private void addCriterion(String criterionName, String feedback, Object... args) {
         addCriterion(criterionName, null, false, feedback, args);
     }
 
+    /**
+     * Helper method for adding a feedback message with parameters to the list of criteria.
+     * Also allows for indicating whether the criterion has been passed or not.
+     *
+     * @param criterionName The key/code of the criterion name message.
+     * @param passed        Indicator whether criterion has been passed.
+     * @param feedback      The key/code of the criterion feedback message.
+     * @param args          Optional message parameters.
+     */
     private void addCriterion(String criterionName, boolean passed, String feedback, Object... args) {
         addCriterion(criterionName, null, passed, feedback, args);
     }
 
+    /**
+     * Helper method for adding a feedback message with parameters and awarded/deducted points
+     * to the list of criteria.
+     *
+     * @param criterionName The key/code of the criterion name message.
+     * @param points        The awarded or deducted points for this criterion.
+     * @param feedback      The key/code of the criterion feedback message.
+     * @param args          Optional message parameters.
+     */
     private void addCriterion(String criterionName, BigDecimal points, String feedback, Object... args) {
         addCriterion(criterionName, points, false, feedback, args);
     }
 
+    /**
+     * Helper method for adding a feedback message with parameters and awarded/deducted points
+     * to the list of criteria. Also allows for indicating whether the criterion has been passed or not.
+     *
+     * @param criterionName The key/code of the criterion name message.
+     * @param points        The awarded or deducted points for this criterion.
+     * @param passed        Indicator whether criterion has been passed.
+     * @param feedback      The key/code of the criterion feedback message.
+     * @param args          Optional message parameters.
+     */
     private void addCriterion(String criterionName, BigDecimal points, boolean passed, String feedback, Object... args) {
         criteria.add(new CriterionDto(
             this.messageSource.getMessage(criterionName, null, locale),

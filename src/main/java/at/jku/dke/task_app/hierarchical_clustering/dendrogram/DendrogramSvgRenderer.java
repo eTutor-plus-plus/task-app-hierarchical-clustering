@@ -8,8 +8,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Renders a {@link DendrogramModel} as an SVG string.
+ */
 public class DendrogramSvgRenderer {
 
+    /**
+     * Renders the provided dendrogram model as an SVG.
+     *
+     * @param model The dendrogram model to render.
+     * @return The SVG string representing the dendrogram.
+     */
     public String render(DendrogramModel model) {
         List<String> leaves = model.getLeafOrder();
         DendrogramModel.Node root = model.getRoot();
@@ -110,6 +119,15 @@ public class DendrogramSvgRenderer {
         return sb.toString();
     }
 
+    /**
+     * Recursively renders a dendrogram node and its children into the SVG.
+     *
+     * @param node The current dendrogram node.
+     * @param nodeX Map of node labels to their horizontal positions.
+     * @param niceMax Maximum height used for scaling.
+     * @param plotH Height of the plotting area.
+     * @param sb The StringBuilder accumulating SVG content.
+     */
     private void renderNode(DendrogramModel.Node node, Map<String, Double> nodeX, double niceMax, int plotH, StringBuilder sb) {
         if (node.isLeaf()) return;
 
@@ -138,10 +156,24 @@ public class DendrogramSvgRenderer {
         nodeX.put(node.getLabel(), (xL + xR) / 2.0);
     }
 
+    /**
+     * Converts a dendrogram height value to a vertical SVG coordinate.
+     *
+     * @param height The height of the node.
+     * @param niceMax Maximum height used for scaling.
+     * @param plotH Height of the plotting area.
+     * @return The Y coordinate in the SVG.
+     */
     private double heightToSvgY(double height, double niceMax, int plotH) {
         return Config.marginTop + plotH * (1.0 - height / niceMax);
     }
 
+    /**
+     * Determines an appropriate tick step for the Y-axis based on the maximum height.
+     *
+     * @param maxHeight The maximum height in the dendrogram.
+     * @return The calculated tick step.
+     */
     static double tickStep(double maxHeight) {
         double roughStep = maxHeight / 7.0;
         double magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
@@ -155,19 +187,37 @@ public class DendrogramSvgRenderer {
         return magnitude * 10;
     }
 
+    /**
+     * Escapes special XML characters in a string.
+     *
+     * @param s The input string.
+     * @return The escaped string.
+     */
     private static String escapeXml(String s) {
         return s.replace("&", "&amp;")
             .replace("<", "&lt;")
             .replace(">", "&gt;");
     }
 
-
+    /**
+     * Formats a string using the English locale.
+     *
+     * @param format The format string.
+     * @param args Arguments referenced by the format specifiers.
+     * @return The formatted string.
+     */
     private static String format(String format, Object... args) {
         return String.format(Locale.ENGLISH, format, args);
     }
 
+
+    /**
+     * Spring component responsible for injecting configuration values
+     * into static fields for access.
+     */
     @Component
     public static class Config {
+
         // canvas
         private static int canvasWidth;
         private static int canvasHeight;
@@ -194,91 +244,199 @@ public class DendrogramSvgRenderer {
         private static String axisColor;
         private static String backgroundColor;
 
+        /**
+         * Sets the canvas width from the Spring property
+         * {@code app.dendrogram.canvas.width}.
+         *
+         * @param canvasWidth the canvas width
+         */
         @Value("${app.dendrogram.canvas.width}")
         public void setCanvasWidth(int canvasWidth) {
             Config.canvasWidth = canvasWidth;
         }
 
+        /**
+         * Sets the canvas height from the Spring property
+         * {@code app.dendrogram.canvas.height}.
+         *
+         * @param canvasHeight the canvas height
+         */
         @Value("${app.dendrogram.canvas.height}")
         public void setCanvasHeight(int canvasHeight) {
             Config.canvasHeight = canvasHeight;
         }
 
+        /**
+         * Sets the top margin from the Spring property
+         * {@code app.dendrogram.canvas.margin.top}.
+         *
+         * @param marginTop the top margin
+         */
         @Value("${app.dendrogram.canvas.margin.top}")
         public void setMarginTop(int marginTop) {
             Config.marginTop = marginTop;
         }
 
+        /**
+         * Sets the bottom margin from the Spring property
+         * {@code app.dendrogram.canvas.margin.bottom}.
+         *
+         * @param marginBottom the bottom margin
+         */
         @Value("${app.dendrogram.canvas.margin.bottom}")
         public void setMarginBottom(int marginBottom) {
             Config.marginBottom = marginBottom;
         }
 
+        /**
+         * Sets the left margin from the Spring property
+         * {@code app.dendrogram.canvas.margin.left}.
+         *
+         * @param marginLeft the left margin
+         */
         @Value("${app.dendrogram.canvas.margin.left}")
         public void setMarginLeft(int marginLeft) {
             Config.marginLeft = marginLeft;
         }
 
+        /**
+         * Sets the right margin from the Spring property
+         * {@code app.dendrogram.canvas.margin.right}.
+         *
+         * @param marginRight the right margin
+         */
         @Value("${app.dendrogram.canvas.margin.right}")
         public void setMarginRight(int marginRight) {
             Config.marginRight = marginRight;
         }
 
+        /**
+         * Sets the x-axis label gap from the Spring property
+         * {@code app.dendrogram.labels.x-axis.label-gap}.
+         *
+         * @param xAxisLabelGap the x-axis label gap
+         */
         @Value("${app.dendrogram.labels.x-axis.label-gap}")
         public void setXAxislabelGap(int xAxisLabelGap) {
             Config.xAxisLabelGap = xAxisLabelGap;
         }
 
+        /**
+         * Sets the grid step from the Spring property
+         * {@code app.dendrogram.canvas.grid-step}.
+         *
+         * @param gridStep the grid step
+         */
         @Value("${app.dendrogram.canvas.grid-step}")
         public void setGridStep(int gridStep) {
             Config.gridStep = gridStep;
         }
 
+        /**
+         * Sets the y-axis tick length from the Spring property
+         * {@code app.dendrogram.labels.y-axis.tick-length}.
+         *
+         * @param yAxisTickLength the y-axis tick length
+         */
         @Value("${app.dendrogram.labels.y-axis.tick-length}")
         public void setyAxisTickLength(int yAxisTickLength) {
             Config.yAxisTickLength = yAxisTickLength;
         }
 
+        /**
+         * Sets the y-axis label gap from the Spring property
+         * {@code app.dendrogram.labels.y-axis.label-gap}.
+         *
+         * @param yAxisLabelGap the y-axis label gap
+         */
         @Value("${app.dendrogram.labels.y-axis.label-gap}")
         public void setyAxisLabelGap(int yAxisLabelGap) {
             Config.yAxisLabelGap = yAxisLabelGap;
         }
 
+        /**
+         * Sets the leaf label font size from the Spring property
+         * {@code app.dendrogram.labels.x-axis.font-size}.
+         *
+         * @param leafLabelFontSize the leaf label font size
+         */
         @Value("${app.dendrogram.labels.x-axis.font-size}")
         public void setLeafLabelFontSize(int leafLabelFontSize) {
             Config.leafLabelFontSize = leafLabelFontSize;
         }
 
+        /**
+         * Sets the axis font size from the Spring property
+         * {@code app.dendrogram.labels.y-axis.font-size}.
+         *
+         * @param axisFontSize the axis font size
+         */
         @Value("${app.dendrogram.labels.y-axis.font-size}")
         public void setAxisFontSize(int axisFontSize) {
             Config.axisFontSize = axisFontSize;
         }
 
+        /**
+         * Sets the line width from the Spring property
+         * {@code app.dendrogram.lines.width}.
+         *
+         * @param lineWidth the line width
+         */
         @Value("${app.dendrogram.lines.width}")
         public void setLineWidth(int lineWidth) {
             Config.lineWidth = lineWidth;
         }
 
+        /**
+         * Sets the line color from the Spring property
+         * {@code app.dendrogram.colors.line}.
+         *
+         * @param lineColor the line color
+         */
         @Value("${app.dendrogram.colors.line}")
         public void setLineColor(String lineColor) {
             Config.lineColor = lineColor;
         }
 
+        /**
+         * Sets the grid color from the Spring property
+         * {@code app.dendrogram.colors.grid}.
+         *
+         * @param gridColor the grid color
+         */
         @Value("${app.dendrogram.colors.grid}")
         public void setGridColor(String gridColor) {
             Config.gridColor = gridColor;
         }
 
+        /**
+         * Sets the text color from the Spring property
+         * {@code app.dendrogram.colors.label}.
+         *
+         * @param textColor the text color
+         */
         @Value("${app.dendrogram.colors.label}")
         public void setTextColor(String textColor) {
             Config.textColor = textColor;
         }
 
+        /**
+         * Sets the axis color from the Spring property
+         * {@code app.dendrogram.colors.axis}.
+         *
+         * @param axisColor the axis color
+         */
         @Value("${app.dendrogram.colors.axis}")
         public void setAxisColor(String axisColor) {
             Config.axisColor = axisColor;
         }
 
+        /**
+         * Sets the background color from the Spring property
+         * {@code app.dendrogram.colors.background}.
+         *
+         * @param backgroundColor the background color
+         */
         @Value("${app.dendrogram.colors.background}")
         public void setBackgroundColor(String backgroundColor) {
             Config.backgroundColor = backgroundColor;

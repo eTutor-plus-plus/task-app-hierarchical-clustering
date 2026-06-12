@@ -9,8 +9,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Builds a dendrogram model from a list of hierarchical clustering merges.
+ */
 public class DendrogramModelBuilder {
 
+    /**
+     * Builds a {@link DendrogramModel} from the provided list of merges.
+     *
+     * @param merges The list of hierarchical clustering merges.
+     * @return The resulting dendrogram model.
+     * @throws IllegalArgumentException If the merge list is null or empty.
+     * @throws IllegalStateException If a required node is missing during tree construction.
+     */
     public DendrogramModel build(List<HierarchicalClusteringMerge> merges) {
         if (merges == null || merges.isEmpty()) {
             throw new IllegalArgumentException("Merge list must not be empty.");
@@ -48,21 +59,37 @@ public class DendrogramModelBuilder {
         return new DendrogramModel(leafOrder, root);
     }
 
+    /**
+     * Ensures that leaf nodes are registered for a cluster in the node map.
+     *
+     * @param cluster The cluster to check.
+     * @param nodeMap The map of cluster labels to dendrogram nodes.
+     */
     private void ensureLeaves(HierarchicalClusteringCluster cluster, Map<String, DendrogramModel.Node> nodeMap) {
         List<String> points = cluster.getDataPoints();
         if (points.size() == 1) {
-            // True leaf — register only if not already present (may appear in multiple merges)
             nodeMap.putIfAbsent(cluster.getLabel(), new DendrogramModel.Node(cluster.getLabel()));
         }
-        // Multi-point clusters will be added as internal nodes when their merge step is processed
     }
 
+    /**
+     * Collects the leaf labels of a subtree in in-order traversal.
+     *
+     * @param node The root node of the subtree.
+     * @return The list of leaf labels.
+     */
     private List<String> inOrderLeaves(DendrogramModel.Node node) {
         List<String> result = new ArrayList<>();
         collectLeaves(node, result);
         return result;
     }
 
+    /**
+     * Helper method to recursively collect leaf labels.
+     *
+     * @param node The current node.
+     * @param acc The accumulator list to collect leaf labels into.
+     */
     private void collectLeaves(DendrogramModel.Node node, List<String> acc) {
         if (node == null) return;
         if (node.isLeaf()) {

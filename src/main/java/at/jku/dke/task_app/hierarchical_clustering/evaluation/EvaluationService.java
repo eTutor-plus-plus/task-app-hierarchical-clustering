@@ -54,7 +54,6 @@ public class EvaluationService {
         // find task
         var task = this.taskRepository.findById(submission.taskId()).orElseThrow(() -> new EntityNotFoundException("Task " + submission.taskId() + " does not exist."));
 
-        // evaluate input
         LOG.info("Evaluating input for task {} with mode {} and feedback-level {}", submission.taskId(), submission.mode(), submission.feedbackLevel());
 
         locale = Locale.of(submission.language());
@@ -110,6 +109,14 @@ public class EvaluationService {
         return new GradingDto(task.getMaxPoints(), awardedPoints, feedback, criteria);
     }
 
+    /**
+     * The main evaluation loop. Compares the given input clustering against the solution clustering
+     * and builds registers for feedback.
+     *
+     * @param task         The task.
+     * @param eventWrapper The parsed input clustering.
+     * @return The awarded points for the input/submission.
+     */
     private BigDecimal gradeAndBuildFeedback(HierarchicalClusteringTask task, SubmissionInputParser.MergeEventWrapper eventWrapper) {
         BigDecimal awardedPoints = BigDecimal.ZERO;
 
@@ -247,6 +254,20 @@ public class EvaluationService {
         return awardedPoints.compareTo(BigDecimal.ZERO) >= 0 ? awardedPoints : BigDecimal.ZERO;
     }
 
+    /**
+     * Compares an incorrect cluster from the input submission with other clusters at the same distance
+     * from the solution to find the most similar cluster for building feedback.
+     *
+     * @param inputMerge                   The wrong merge/cluster of the input.
+     * @param solutionMerges               The merges/clusters of the solution at the distance.
+     * @param foundSolutionMerges          Register of merges/clusters from the solution which were found and are fully correct in the input.
+     * @param partiallyFoundSolutionMerges Register of merges/clusters from the solution which were found and are partially correct in the input.
+     * @param superfluousMerges            Register of superfluous merges/clusters.
+     * @param missingDataPoints            Register of missing data points in clusters.
+     * @param superfluousDataPoints        Register of superfluous data points in clusters.
+     * @param duplicateDataPoints          Register of duplicate/redundant data points in clusters.
+     */
+
     private void buildDataPointFeedback(HierarchicalClusteringMerge inputMerge,
                                         List<HierarchicalClusteringMerge> solutionMerges,
                                         SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> foundSolutionMerges,
@@ -310,6 +331,13 @@ public class EvaluationService {
         }
     }
 
+    /**
+     * Helper method to bring the raw merge history of a task into the correct form
+     * for evaluation and displaying (e.g. in UI).
+     *
+     * @param task The task.
+     * @return All merge events (i.e. all new and inherited clusters at a distance) mapped by distance.
+     */
     public static SortedMap<BigDecimal, MergeEventAtDistance> buildEvaluationMergeHistoryForTask(HierarchicalClusteringTask task) {
         SortedMap<BigDecimal, MergeEventAtDistance> mergeEvents = new TreeMap<>();
         List<HierarchicalClusteringMerge> mergeHistory = task.getSolutionMergeHistory();
@@ -360,6 +388,16 @@ public class EvaluationService {
         return mergeEvents;
     }
 
+    /**
+     * Record class representing a full merge event at a distance
+     * (which contains newly formed clusters at this distance,
+     * clusters inherited from previous merge events at a distance and
+     * the points to be awarded for the distance).
+     *
+     * @param newMerges         The newly formed clusters at a distance.
+     * @param inheritedMerges   The inherited clusters from previous distances.
+     * @param pointsForDistance The points to be awarded for the distance.
+     */
     public record MergeEventAtDistance(
         List<HierarchicalClusteringMerge> newMerges,
         List<HierarchicalClusteringMerge> inheritedMerges,

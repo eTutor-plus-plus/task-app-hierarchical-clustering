@@ -10,6 +10,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 
+/**
+ * A generator that can generate a matrix of data points in form of a distance matrix.
+ * Also handles calculation of distance matrices from a list of coordinates.
+ */
 public class DistanceMatrixGenerator implements DataGenerator<HierarchicalClusteringTask.DistanceMatrix> {
 
     @Override
@@ -57,6 +61,15 @@ public class DistanceMatrixGenerator implements DataGenerator<HierarchicalCluste
 		return new HierarchicalClusteringTask.DistanceMatrix(labels, matrix);
 	}
 
+    /**
+     * Creates a distance matrix from a given list of coordinates by calculating the distances
+     * between the points in the coordinate list using the specified distance metric and filling
+     * them into the matrix symmetrically.
+     *
+     * @param points The list of coordinates.
+     * @param metric The metric to calculate distances with.
+     * @return The resulting distance matrix.
+     */
     @ValidMatrix
     public HierarchicalClusteringTask.DistanceMatrix calculateMatrixFromCoordinates(List<HierarchicalClusteringTask.CoordinatePoint> points, DistanceMetric metric) {
         int n = points.size();
@@ -78,10 +91,23 @@ public class DistanceMatrixGenerator implements DataGenerator<HierarchicalCluste
         return new HierarchicalClusteringTask.DistanceMatrix(labels, matrix);
     }
 
+    /**
+     * Spring component responsible for injecting configuration values
+     * into static fields for access.
+     */
     @Component
     public static class Config {
         static BigDecimal step;
 
+        /**
+         * Sets the {@linkplain #step} value from the Spring property
+         * {@code app.generation.matrix.step}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
+         *
+         * @param step the step size for matrix generation
+         */
         @Value("${app.generation.matrix.step}")
         public void setStep(BigDecimal step) {
             Config.step = step;
