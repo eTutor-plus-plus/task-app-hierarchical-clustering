@@ -111,12 +111,13 @@ app:
         bottom: 60
         left: 70
         right: 30
+      grid-step: 2
 
     labels:
-      leaf:
+      x-axis:
         font-size: 20
-        offset: 5
-      axis:
+        label-gap: 5
+      y-axis:
         font-size: 16
         tick-length: 5
         label-gap: 4

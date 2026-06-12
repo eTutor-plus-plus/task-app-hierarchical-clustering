@@ -3,7 +3,6 @@ package at.jku.dke.task_app.hierarchical_clustering.dendrogram;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -46,7 +45,7 @@ public class DendrogramSvgRenderer {
         // --- grid ---
         sb.append("  <g id=\"grid\">\n");
 
-        double gridStep = tickStep / 2.0;
+        double gridStep = tickStep / Config.gridStep;
 
         double gridtick = 0.0;
         while (gridtick <= fitMax + gridStep * 0.001) {
@@ -89,7 +88,7 @@ public class DendrogramSvgRenderer {
         // --- leaf labels ---
         sb.append("  <g id=\"labels\">\n");
 
-        double leafY = Config.marginTop + plotH + Config.leafLabelOffset + Config.leafLabelFontSize * 0.8;
+        double leafY = Config.marginTop + plotH + Config.xAxisLabelGap + Config.leafLabelFontSize * 0.8;
 
         for (String leaf : leaves) {
             double x = leafX.get(leaf);
@@ -178,7 +177,8 @@ public class DendrogramSvgRenderer {
         private static int marginRight;
 
         // label gaps to axis
-        private static int leafLabelOffset;
+        private static int xAxisLabelGap;
+        private static int gridStep;
         private static int yAxisTickLength;
         private static int yAxisLabelGap;
 
@@ -224,27 +224,32 @@ public class DendrogramSvgRenderer {
             Config.marginRight = marginRight;
         }
 
-        @Value("${app.dendrogram.labels.leaf.offset}")
-        public void setLeafLabelOffset(int leafLabelOffset) {
-            Config.leafLabelOffset = leafLabelOffset;
+        @Value("${app.dendrogram.labels.x-axis.label-gap}")
+        public void setXAxislabelGap(int xAxisLabelGap) {
+            Config.xAxisLabelGap = xAxisLabelGap;
         }
 
-        @Value("${app.dendrogram.labels.axis.tick-length}")
+        @Value("${app.dendrogram.canvas.grid-step}")
+        public void setGridStep(int gridStep) {
+            Config.gridStep = gridStep;
+        }
+
+        @Value("${app.dendrogram.labels.y-axis.tick-length}")
         public void setyAxisTickLength(int yAxisTickLength) {
             Config.yAxisTickLength = yAxisTickLength;
         }
 
-        @Value("${app.dendrogram.labels.axis.label-gap}")
+        @Value("${app.dendrogram.labels.y-axis.label-gap}")
         public void setyAxisLabelGap(int yAxisLabelGap) {
             Config.yAxisLabelGap = yAxisLabelGap;
         }
 
-        @Value("${app.dendrogram.labels.leaf.font-size}")
+        @Value("${app.dendrogram.labels.x-axis.font-size}")
         public void setLeafLabelFontSize(int leafLabelFontSize) {
             Config.leafLabelFontSize = leafLabelFontSize;
         }
 
-        @Value("${app.dendrogram.labels.axis.font-size}")
+        @Value("${app.dendrogram.labels.y-axis.font-size}")
         public void setAxisFontSize(int axisFontSize) {
             Config.axisFontSize = axisFontSize;
         }
