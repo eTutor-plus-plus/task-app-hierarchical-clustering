@@ -242,9 +242,9 @@ public class EvaluationService {
             feedbackBuilder
                 .withWrongOrSuperfluousDistances(wrongOrSuperfluousDistances)
                 .withMissingDistances(missingDistances)
-                .withSuperfluousMerges(superfluousClusters)
-                .withRedundantMerges(redundantClusters)
-                .withMissingMerges(missingClusters)
+                .withSuperfluousClusters(superfluousClusters)
+                .withRedundantClusters(redundantClusters)
+                .withMissingClusters(missingClusters)
                 .withDuplicateDataPoints(duplicateDataPoints)
                 .withSuperfluousDataPoints(superfluousDataPoints)
                 .withMissingDataPoints(missingDataPoints)

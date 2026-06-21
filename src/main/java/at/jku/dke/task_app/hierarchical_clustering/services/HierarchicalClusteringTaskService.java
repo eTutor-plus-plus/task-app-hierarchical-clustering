@@ -231,24 +231,14 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
     private void generateTaskData(HierarchicalClusteringTask task, ModifyTaskDto<ModifyHierarchicalClusteringTaskDto> modifyTaskDto) {
         if (modifyTaskDto.additionalData().assignmentType() == AssignmentTypeDto.COORDINATES) {
             CoordinateGenerator coordinateGenerator;
-            DistanceMetric distanceMetric;
+            DistanceMetric distanceMetric = modifyTaskDto.additionalData().distanceMetric();
+            task.setDistanceMetric(distanceMetric);
 
-            switch (modifyTaskDto.additionalData().distanceMetric()) {
-                case DistanceMetric.EUCLIDEAN:
-                    distanceMetric = DistanceMetric.EUCLIDEAN;
-                    task.setDistanceMetric(distanceMetric);
-                    coordinateGenerator = new EuclideanCoordinateGenerator();
-                    break;
-                case DistanceMetric.MANHATTAN:
-                    distanceMetric = DistanceMetric.MANHATTAN;
-                    task.setDistanceMetric(distanceMetric);
-                    coordinateGenerator = new ManhattanCoordinateGenerator();
-                    break;
-                default:
-                    coordinateGenerator = null;
-                    distanceMetric = null;
-                    break;
-            }
+            coordinateGenerator = switch (distanceMetric) {
+                case DistanceMetric.EUCLIDEAN -> new EuclideanCoordinateGenerator();
+                case DistanceMetric.MANHATTAN -> new ManhattanCoordinateGenerator();
+                default -> null;
+            };
 
             if (coordinateGenerator == null) {
                 throw new IllegalArgumentException("Chosen distance metric does not exist or is not supported.");

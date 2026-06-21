@@ -96,7 +96,7 @@ public class EvaluationFeedbackBuilder {
      * @param superfluousMerges The register of superfluous merges/clusters.
      * @return This builder for chaining.
      */
-    public EvaluationFeedbackBuilder withSuperfluousMerges(SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> superfluousMerges) {
+    public EvaluationFeedbackBuilder withSuperfluousClusters(SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> superfluousMerges) {
         this.superfluousMerges = superfluousMerges;
         return this;
     }
@@ -107,7 +107,7 @@ public class EvaluationFeedbackBuilder {
      * @param redundantMerges The register of redundant merges/clusters.
      * @return This builder for chaining.
      */
-    public EvaluationFeedbackBuilder withRedundantMerges(SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> redundantMerges) {
+    public EvaluationFeedbackBuilder withRedundantClusters(SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> redundantMerges) {
         this.redundantMerges = redundantMerges;
         return this;
     }
@@ -118,7 +118,7 @@ public class EvaluationFeedbackBuilder {
      * @param missingMerges The register of missing merges/clusters.
      * @return This builder for chaining.
      */
-    public EvaluationFeedbackBuilder withMissingMerges(SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> missingMerges) {
+    public EvaluationFeedbackBuilder withMissingClusters(SortedMap<BigDecimal, List<HierarchicalClusteringMerge>> missingMerges) {
         this.missingMerges = missingMerges;
         return this;
     }
