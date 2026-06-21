@@ -87,8 +87,8 @@ public class ValidMatrixValidator implements ConstraintValidator<ValidMatrix, Hi
 
             hibernateContext.disableDefaultConstraintViolation();
 
-            // can be switched to desired locale
-            String message = this.messageSource.getMessage("validation.distanceMatrix." + messageKey, messageParameters, Locale.getDefault());
+            // language can be changed (e.g. to Locale.getDefault()) if desired
+            String message = this.messageSource.getMessage("validation.distanceMatrix." + messageKey, messageParameters, Locale.ENGLISH);
 
             hibernateContext
                 .addMessageParameter("0", message)

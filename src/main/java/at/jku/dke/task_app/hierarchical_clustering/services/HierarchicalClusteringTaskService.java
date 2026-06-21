@@ -205,7 +205,8 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         int n = modifyTaskDto.additionalData().nDataPoints();
 
         if (n <= 1) {
-            throw new IllegalArgumentException("Task should have at least two data points.");
+            // language can be changed (e.g. to Locale.getDefault()) if desired
+            throw new IllegalArgumentException(this.messageSource.getMessage("validation.nDataPoints", null, Locale.ENGLISH));
         }
 
         int nSolutionSteps = n - 1;
@@ -213,7 +214,8 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         BigDecimal actualMaxPoints = modifyTaskDto.maxPoints();
 
         if (expectedMaxPoints.compareTo(actualMaxPoints) != 0) {
-            throw new IllegalArgumentException("Invalid max. points: need to be set to " + expectedMaxPoints + " (currently set value: " + actualMaxPoints + ").");
+            // language can be changed (e.g. to Locale.getDefault()) if desired
+            throw new IllegalArgumentException(this.messageSource.getMessage("validation.maxPoints", new Object[]{expectedMaxPoints, actualMaxPoints}, Locale.ENGLISH));
         }
     }
 
