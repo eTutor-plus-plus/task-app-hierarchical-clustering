@@ -9,7 +9,7 @@ import java.util.List;
  * Enum that represents different linkage methods.
  * <p>
  * A linkage method needs to implement the linkage function of
- * the functional interface {@linkplain Linkage} which
+ * the functional interface {@linkplain Linkage}. The function
  * takes two clusters and a distance matrix to determine the new
  * distance between the clusters based on the distances of
  * their points, depending on the linkage method.

@@ -40,7 +40,7 @@ public class DendrogramSvgRenderer {
 
         StringBuilder sb = new StringBuilder();
 
-        // --- SVG header ---
+        // SVG header
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         sb.append(format(
             "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">\n",
@@ -51,7 +51,7 @@ public class DendrogramSvgRenderer {
             "  <rect width=\"%d\" height=\"%d\" fill=\"%s\"/>\n",
             Config.canvasWidth, Config.canvasHeight, Config.backgroundColor));
 
-        // --- grid ---
+        // grid
         sb.append("  <g id=\"grid\">\n");
 
         double gridStep = tickStep / Config.gridStep;
@@ -84,7 +84,7 @@ public class DendrogramSvgRenderer {
             "  <line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"%s\" stroke-width=\"1.5\"/>\n",
             Config.marginLeft, Config.marginTop, Config.marginLeft, Config.marginTop + plotH, Config.axisColor));
 
-        // --- dendrogram ---
+        // lines
         sb.append(format(
             "  <g id=\"dendrogram\" stroke=\"%s\" stroke-width=\"%d\" fill=\"none\">\n",
             Config.lineColor, Config.lineWidth));
@@ -94,7 +94,7 @@ public class DendrogramSvgRenderer {
 
         sb.append("  </g>\n");
 
-        // --- leaf labels ---
+        // leaf labels
         sb.append("  <g id=\"labels\">\n");
 
         double leafY = Config.marginTop + plotH + Config.xAxisLabelGap + Config.leafLabelFontSize * 0.8;
@@ -226,7 +226,7 @@ public class DendrogramSvgRenderer {
         private static int marginLeft;
         private static int marginRight;
 
-        // label gaps to axis
+        // label gaps to axis + grid step
         private static int xAxisLabelGap;
         private static int gridStep;
         private static int yAxisTickLength;
@@ -247,6 +247,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the canvas width from the Spring property
          * {@code app.dendrogram.canvas.width}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param canvasWidth the canvas width
          */
@@ -258,6 +261,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the canvas height from the Spring property
          * {@code app.dendrogram.canvas.height}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param canvasHeight the canvas height
          */
@@ -269,6 +275,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the top margin from the Spring property
          * {@code app.dendrogram.canvas.margin.top}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param marginTop the top margin
          */
@@ -280,6 +289,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the bottom margin from the Spring property
          * {@code app.dendrogram.canvas.margin.bottom}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param marginBottom the bottom margin
          */
@@ -291,6 +303,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the left margin from the Spring property
          * {@code app.dendrogram.canvas.margin.left}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param marginLeft the left margin
          */
@@ -302,6 +317,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the right margin from the Spring property
          * {@code app.dendrogram.canvas.margin.right}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param marginRight the right margin
          */
@@ -313,6 +331,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the x-axis label gap from the Spring property
          * {@code app.dendrogram.labels.x-axis.label-gap}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param xAxisLabelGap the x-axis label gap
          */
@@ -324,6 +345,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the grid step from the Spring property
          * {@code app.dendrogram.canvas.grid-step}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param gridStep the grid step
          */
@@ -335,6 +359,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the y-axis tick length from the Spring property
          * {@code app.dendrogram.labels.y-axis.tick-length}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param yAxisTickLength the y-axis tick length
          */
@@ -346,6 +373,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the y-axis label gap from the Spring property
          * {@code app.dendrogram.labels.y-axis.label-gap}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param yAxisLabelGap the y-axis label gap
          */
@@ -357,6 +387,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the leaf label font size from the Spring property
          * {@code app.dendrogram.labels.x-axis.font-size}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param leafLabelFontSize the leaf label font size
          */
@@ -368,6 +401,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the axis font size from the Spring property
          * {@code app.dendrogram.labels.y-axis.font-size}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param axisFontSize the axis font size
          */
@@ -379,6 +415,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the line width from the Spring property
          * {@code app.dendrogram.lines.width}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param lineWidth the line width
          */
@@ -390,6 +429,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the line color from the Spring property
          * {@code app.dendrogram.colors.line}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param lineColor the line color
          */
@@ -401,6 +443,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the grid color from the Spring property
          * {@code app.dendrogram.colors.grid}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param gridColor the grid color
          */
@@ -412,6 +457,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the text color from the Spring property
          * {@code app.dendrogram.colors.label}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param textColor the text color
          */
@@ -423,6 +471,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the axis color from the Spring property
          * {@code app.dendrogram.colors.axis}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param axisColor the axis color
          */
@@ -434,6 +485,9 @@ public class DendrogramSvgRenderer {
         /**
          * Sets the background color from the Spring property
          * {@code app.dendrogram.colors.background}.
+         * <p>
+         * This method is called by Spring automatically; do not call it manually.
+         * </p>
          *
          * @param backgroundColor the background color
          */

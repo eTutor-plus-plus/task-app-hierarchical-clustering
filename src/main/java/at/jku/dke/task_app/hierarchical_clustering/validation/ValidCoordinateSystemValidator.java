@@ -52,6 +52,7 @@ public class ValidCoordinateSystemValidator implements ConstraintValidator<Valid
 
             hibernateContext.disableDefaultConstraintViolation();
 
+            // can be switched to desired locale
             String message = this.messageSource.getMessage("validation.coordinateSystem." + messageKey, messageParameters, Locale.getDefault());
 
             hibernateContext

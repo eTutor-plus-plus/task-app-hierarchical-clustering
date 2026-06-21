@@ -22,7 +22,7 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
         int xMaxSteps = (int) Math.round(maxX * 10);
         int yMinSteps = (int) Math.round(minY * 10);
         int yMaxSteps = (int) Math.round(maxY * 10);
-        // to allow for only a number of coordinates to be the same (as coordinate generation tends to fill one axis with the same coordinates otherwise)
+        // allow only a number of identical coordinates on an axis (generation with this scheme tends to use the same coordinates for one axis otherwise)
         int maxSharedCoordinates = (int) Math.ceil((double) n / Math.min(xMaxSteps + 1, yMaxSteps + 1) * 1.5);
         maxSharedCoordinates = Math.max(1, maxSharedCoordinates); // always allow at least 1
 
