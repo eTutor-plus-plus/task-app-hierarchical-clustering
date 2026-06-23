@@ -28,11 +28,14 @@ public class ClusteringSolutionFormatter {
      */
     public static HierarchicalClusteringCluster mergeCluster(HierarchicalClusteringCluster left, HierarchicalClusteringCluster right) {
         List<String> combined = new ArrayList<>();
+
         combined.addAll(left.getDataPoints());
         combined.addAll(right.getDataPoints());
         Collections.sort(combined);
+
         HierarchicalClusteringCluster cluster = new HierarchicalClusteringCluster();
         cluster.setDataPoints(combined);
+
         return cluster;
     }
 
@@ -50,6 +53,7 @@ public class ClusteringSolutionFormatter {
             List<String> sortedLeft = new ArrayList<>(raw.leftPoints);
             Collections.sort(sortedLeft);
             HierarchicalClusteringCluster left = clusterLookup.get(sortedLeft);
+
             if (left == null) {
                 left = buildCluster(sortedLeft);
                 clusterLookup.put(sortedLeft, left);
@@ -58,6 +62,7 @@ public class ClusteringSolutionFormatter {
             List<String> sortedRight = new ArrayList<>(raw.rightPoints);
             Collections.sort(sortedRight);
             HierarchicalClusteringCluster right = clusterLookup.get(sortedRight);
+
             if (right == null) {
                 right = buildCluster(sortedRight);
                 clusterLookup.put(sortedRight, right);

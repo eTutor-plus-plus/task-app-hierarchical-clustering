@@ -22,20 +22,18 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
         int xMaxSteps = (int) Math.round(maxX * 10);
         int yMinSteps = (int) Math.round(minY * 10);
         int yMaxSteps = (int) Math.round(maxY * 10);
-        // to allow for only a number of coordinates to be the same (as coordinate generation tends to fill one axis with the same coordinates otherwise)
+        // to allow for only a number of coordinates to be the same (as coordinate generation with this scheme tends to fill one axis with the same coordinates otherwise)
         int maxSharedCoordinates = (int) Math.ceil((double) n / Math.min(xMaxSteps + 1, yMaxSteps + 1) * 1.5);
         maxSharedCoordinates = Math.max(1, maxSharedCoordinates); // always allow at least 1
 
         List<int[]> allCandidates = buildGenericCandidatePool(xMinSteps, xMaxSteps, yMinSteps, yMaxSteps);
 
         if (allCandidates.size() < n) {
-            throw new IllegalArgumentException(
-                "The grid (" + allCandidates.size() + " points) is too small to hold " + n + " points."
-            );
+            throw new IllegalArgumentException("The grid (" + allCandidates.size() + " points) is too small to hold " + n + " points.");
         }
 
         for (int restart = 0; restart <= Config.maxRestarts; restart++) {
-            List<HierarchicalClusteringTask.CoordinatePoint> result    = new ArrayList<>();
+            List<HierarchicalClusteringTask.CoordinatePoint> result = new ArrayList<>();
             List<int[]> placed = new ArrayList<>();
             Set<Double> usedDists = new HashSet<>();
 
@@ -59,8 +57,9 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
                     attempts++;
 
                     // Reject if this candidate would push any axis count over the limit
-                    if (xCount.getOrDefault(cand[0], 0) >= maxSharedCoordinates) continue;
-                    if (yCount.getOrDefault(cand[1], 0) >= maxSharedCoordinates) continue;
+                    if (xCount.getOrDefault(cand[0], 0) >= maxSharedCoordinates || yCount.getOrDefault(cand[1], 0) >= maxSharedCoordinates) {
+                        continue;
+                    }
 
                     if (isValidCandidate(cand, placed, usedDists)) {
                         Set<Double> newDists = newDistances(cand, placed);
@@ -93,9 +92,8 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
             }
         }
 
-        throw new RuntimeException(
-            "Could not generate " + n + " points satisfying all constraints after " +
-                Config.maxRestarts + " restarts. Try a larger grid or fewer points."
+        throw new RuntimeException("Could not generate " + n + " points satisfying all constraints after " +
+            Config.maxRestarts + " restarts. Try a larger grid or fewer points."
         );
     }
 

@@ -49,7 +49,7 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
         for (int step = 1; step < n; step++) {
             int size = clusters.size();
 
-            checkForTiebreaker(workingMatrix);
+            checkForTie(workingMatrix);
 
             // 1. Find the closest pair of clusters
             BigDecimal minDist = BigDecimal.valueOf(Double.MAX_VALUE);
@@ -68,8 +68,7 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
             // 2. Record the raw merge
             List<String> leftLabels  = indicesToLabels(clusters.get(clusterA), input.getLabels());
             List<String> rightLabels = indicesToLabels(clusters.get(clusterB), input.getLabels());
-            rawMerges.add(new ClusteringSolutionFormatter.RawMerge(
-                leftLabels, rightLabels, minDist, step));
+            rawMerges.add(new ClusteringSolutionFormatter.RawMerge(leftLabels, rightLabels, minDist, step));
 
             // 3. Merge cluster B into A (member indices)
             clusters.get(clusterA).addAll(clusters.get(clusterB));
@@ -134,7 +133,7 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
      *
      * @param workingMatrix The matrix to be checked for ties.
      */
-    private void checkForTiebreaker(BigDecimal[][] workingMatrix) {
+    private void checkForTie(BigDecimal[][] workingMatrix) {
         int size = workingMatrix.length;
 
         // Find minimum distance
@@ -152,10 +151,9 @@ public class NaiveAgglomerativeClusteringAlgorithm implements HierarchicalCluste
             for (int j = i + 1; j < size; j++) {
                 if (workingMatrix[i][j].compareTo(minDist) == 0) {
                     if (seen[i] || seen[j]) {
-                        throw new IllegalStateException(
-                            "Solution for current Matrix leads to Tiebreaker! Consider changing or re-arranging duplicate distances."
-                        );
+                        throw new IllegalStateException("Solution for current Matrix leads to Tiebreaker! Consider changing or re-arranging duplicate distances.");
                     }
+
                     seen[i] = true;
                     seen[j] = true;
                 }

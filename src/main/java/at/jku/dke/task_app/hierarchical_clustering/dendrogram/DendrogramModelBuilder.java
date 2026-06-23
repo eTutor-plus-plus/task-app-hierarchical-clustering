@@ -31,23 +31,28 @@ public class DendrogramModelBuilder {
         Map<String, DendrogramModel.Node> nodeMap = new HashMap<>();
 
         for (HierarchicalClusteringMerge merge : merges) {
-            ensureLeaves(merge.getSourceCluster1(),  nodeMap);
+            ensureLeaves(merge.getSourceCluster1(), nodeMap);
             ensureLeaves(merge.getSourceCluster2(), nodeMap);
         }
 
         // Replay merges in step order, building the tree bottom-up
         DendrogramModel.Node root = null;
         for (HierarchicalClusteringMerge merge : merges) {
-            String leftLabel  = merge.getSourceCluster1().getLabel();
+            String leftLabel = merge.getSourceCluster1().getLabel();
             String rightLabel = merge.getSourceCluster2().getLabel();
-            String newLabel   = merge.getResult().getLabel();
-            BigDecimal height     = merge.getDistance();
+            String newLabel = merge.getResult().getLabel();
+            BigDecimal height = merge.getDistance();
 
-            DendrogramModel.Node leftNode  = nodeMap.get(leftLabel);
+            DendrogramModel.Node leftNode = nodeMap.get(leftLabel);
             DendrogramModel.Node rightNode = nodeMap.get(rightLabel);
 
-            if (leftNode  == null) throw new IllegalStateException("No node for left label:  " + leftLabel);
-            if (rightNode == null) throw new IllegalStateException("No node for right label: " + rightLabel);
+            if (leftNode  == null) {
+                throw new IllegalStateException("No node for left label:  " + leftLabel);
+            }
+
+            if (rightNode == null) {
+                throw new IllegalStateException("No node for right label: " + rightLabel);
+            }
 
             DendrogramModel.Node merged = new DendrogramModel.Node(newLabel, height.doubleValue(), leftNode, rightNode);
             nodeMap.put(newLabel, merged);
@@ -91,11 +96,15 @@ public class DendrogramModelBuilder {
      * @param acc The accumulator list to collect leaf labels into.
      */
     private void collectLeaves(DendrogramModel.Node node, List<String> acc) {
-        if (node == null) return;
+        if (node == null) {
+            return;
+        }
+
         if (node.isLeaf()) {
             acc.add(node.getLabel());
             return;
         }
+
         collectLeaves(node.getLeft(),  acc);
         collectLeaves(node.getRight(), acc);
     }
