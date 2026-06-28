@@ -18,6 +18,7 @@ public class ManhattanCoordinateGenerator extends CoordinateGenerator {
 
     @Override
 	public List<HierarchicalClusteringTask.CoordinatePoint> generate(int n, double minX, double maxX, double minY, double maxY, Random random) {
+        // arithmetic is done in integer tenths to avoid floating-point error
         int minStepX = (int) (minX * 10);
         int maxStepX = (int) (maxX * 10);
         int minStepY = (int) (minY * 10);
@@ -25,9 +26,7 @@ public class ManhattanCoordinateGenerator extends CoordinateGenerator {
         List<int[]> candidates = buildGenericCandidatePool(minStepX, maxStepX, minStepY, maxStepY);
 
         if (candidates.size() < n) {
-            throw new IllegalArgumentException(
-                "The grid (" + candidates.size() + " points) is too small to hold " + n + " points."
-            );
+            throw new IllegalArgumentException("The grid (" + candidates.size() + " points) is too small to hold " + n + " points.");
         }
 
         Collections.shuffle(candidates, random);
@@ -91,9 +90,8 @@ public class ManhattanCoordinateGenerator extends CoordinateGenerator {
             }
         }
 
-        throw new RuntimeException(
-            "Could not generate " + n + " points satisfying all constraints after " +
-                Config.maxRestarts + " restarts. Try a larger grid or fewer points."
+        throw new RuntimeException("Could not generate " + n + " points satisfying all constraints after " +
+            Config.maxRestarts + " restarts. Try a larger grid or fewer points."
         );
     }
 

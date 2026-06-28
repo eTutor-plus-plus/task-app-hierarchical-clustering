@@ -29,13 +29,11 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
         List<int[]> allCandidates = buildGenericCandidatePool(xMinSteps, xMaxSteps, yMinSteps, yMaxSteps);
 
         if (allCandidates.size() < n) {
-            throw new IllegalArgumentException(
-                "The grid (" + allCandidates.size() + " points) is too small to hold " + n + " points."
-            );
+            throw new IllegalArgumentException("The grid (" + allCandidates.size() + " points) is too small to hold " + n + " points.");
         }
 
         for (int restart = 0; restart <= Config.maxRestarts; restart++) {
-            List<HierarchicalClusteringTask.CoordinatePoint> result    = new ArrayList<>();
+            List<HierarchicalClusteringTask.CoordinatePoint> result = new ArrayList<>();
             List<int[]> placed = new ArrayList<>();
             Set<Double> usedDists = new HashSet<>();
 
@@ -59,8 +57,9 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
                     attempts++;
 
                     // Reject if this candidate would push any axis count over the limit
-                    if (xCount.getOrDefault(cand[0], 0) >= maxSharedCoordinates) continue;
-                    if (yCount.getOrDefault(cand[1], 0) >= maxSharedCoordinates) continue;
+                    if (xCount.getOrDefault(cand[0], 0) >= maxSharedCoordinates || yCount.getOrDefault(cand[1], 0) >= maxSharedCoordinates) {
+                        continue;
+                    }
 
                     if (isValidCandidate(cand, placed, usedDists)) {
                         Set<Double> newDists = newDistances(cand, placed);
@@ -93,9 +92,8 @@ public class EuclideanCoordinateGenerator extends CoordinateGenerator {
             }
         }
 
-        throw new RuntimeException(
-            "Could not generate " + n + " points satisfying all constraints after " +
-                Config.maxRestarts + " restarts. Try a larger grid or fewer points."
+        throw new RuntimeException("Could not generate " + n + " points satisfying all constraints after " +
+            Config.maxRestarts + " restarts. Try a larger grid or fewer points."
         );
     }
 

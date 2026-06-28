@@ -51,7 +51,7 @@ public class DendrogramSvgRenderer {
             "  <rect width=\"%d\" height=\"%d\" fill=\"%s\"/>\n",
             Config.canvasWidth, Config.canvasHeight, Config.backgroundColor));
 
-        // grid
+        // grid (horizontal orientation lines)
         sb.append("  <g id=\"grid\">\n");
 
         double gridStep = tickStep / Config.gridStep;
@@ -94,7 +94,7 @@ public class DendrogramSvgRenderer {
 
         sb.append("  </g>\n");
 
-        // leaf labels
+        // data point (leaf) labels
         sb.append("  <g id=\"labels\">\n");
 
         double leafY = Config.marginTop + plotH + Config.xAxisLabelGap + Config.leafLabelFontSize * 0.8;
@@ -109,7 +109,6 @@ public class DendrogramSvgRenderer {
 
         sb.append("  </g>\n");
 
-        // x-axis
         sb.append(format(
             "  <line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"%s\" stroke-width=\"1.5\"/>\n",
             Config.marginLeft, Config.marginTop + plotH, Config.marginLeft + plotW, Config.marginTop + plotH, Config.axisColor));
@@ -129,7 +128,9 @@ public class DendrogramSvgRenderer {
      * @param sb The StringBuilder accumulating SVG content.
      */
     private void renderNode(DendrogramModel.Node node, Map<String, Double> nodeX, double niceMax, int plotH, StringBuilder sb) {
-        if (node.isLeaf()) return;
+        if (node.isLeaf()) {
+            return;
+        }
 
         renderNode(node.getLeft(), nodeX, niceMax, plotH, sb);
         renderNode(node.getRight(), nodeX, niceMax, plotH, sb);
@@ -181,7 +182,9 @@ public class DendrogramSvgRenderer {
 
         for (double m : multipliers) {
             double candidate = magnitude * m;
-            if (maxHeight / candidate <= 10.0) return candidate;
+            if (maxHeight / candidate <= 10.0) {
+                return candidate;
+            }
         }
 
         return magnitude * 10;
