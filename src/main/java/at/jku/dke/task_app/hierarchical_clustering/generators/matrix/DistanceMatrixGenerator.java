@@ -2,7 +2,6 @@ package at.jku.dke.task_app.hierarchical_clustering.generators.matrix;
 
 import at.jku.dke.task_app.hierarchical_clustering.data.entities.HierarchicalClusteringTask;
 import at.jku.dke.task_app.hierarchical_clustering.generators.DataGenerator;
-import at.jku.dke.task_app.hierarchical_clustering.validation.ValidMatrix;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -70,7 +69,6 @@ public class DistanceMatrixGenerator implements DataGenerator<HierarchicalCluste
      * @param metric The metric to calculate distances with.
      * @return The resulting distance matrix.
      */
-    @ValidMatrix
     public HierarchicalClusteringTask.DistanceMatrix calculateMatrixFromCoordinates(List<HierarchicalClusteringTask.CoordinatePoint> points, DistanceMetric metric) {
         int n = points.size();
         List<String> labels = new ArrayList<>();
@@ -82,6 +80,11 @@ public class DistanceMatrixGenerator implements DataGenerator<HierarchicalCluste
 
             for (int j = i + 1; j < n; j++) {
                 BigDecimal distance = metric.distance(points.get(i), points.get(j)).setScale(2, RoundingMode.HALF_UP).stripTrailingZeros();
+
+                if (distance.compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new IllegalArgumentException("Invalid distance matrix: distances (outside 0 diagonal) cannot be 0 or less. " +
+                        "Check distance or coordinates of points [" + (i + 1) + ", " + (j + 1) + "].");
+                }
 
                 matrix[i][j] = distance;
                 matrix[j][i] = distance;
