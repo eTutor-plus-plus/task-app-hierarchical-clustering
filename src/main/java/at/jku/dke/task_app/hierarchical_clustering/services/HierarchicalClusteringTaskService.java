@@ -317,8 +317,8 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
         for (HierarchicalClusteringTask.CoordinatePoint p : points) {
             html.append("<tr>");
             html.append("<th>").append(p.getLabel()).append("</th>");
-            html.append("<td>").append(p.getX()).append("</td>");
-            html.append("<td>").append(p.getY()).append("</td>");
+            html.append("<td>").append(p.getX().stripTrailingZeros().toPlainString()).append("</td>");
+            html.append("<td>").append(p.getY().stripTrailingZeros().toPlainString()).append("</td>");
             html.append("</tr>");
         }
 
@@ -355,7 +355,7 @@ public class HierarchicalClusteringTaskService extends BaseTaskService<Hierarchi
             html.append("<th>").append(labels.get(i)).append("</th>");
 
             for (int j = 0; j < distances[i].length && i >= j; j++) {
-                html.append("<td>").append(distances[i][j]).append("</td>");
+                html.append("<td>").append(distances[i][j].stripTrailingZeros().toPlainString()).append("</td>");
             }
 
             html.append("</tr>");
