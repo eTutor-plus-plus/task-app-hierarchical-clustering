@@ -86,6 +86,8 @@ public class SubmissionInputParser {
             return;
         }
 
+        validateBrackets(normalized);
+
         String[] parts = normalized.split(":", 2);
         if (parts.length != 2) {
             throwSyntaxError("separator", lineNumber);
@@ -113,9 +115,8 @@ public class SubmissionInputParser {
                 throwSyntaxError("openingBracket", lineNumber);
             }
 
-            int end = clusterPart.indexOf(')', i);
-            int nextClusterStartIndex = clusterPart.indexOf('(', i + 1);
-            if (end == -1 || (nextClusterStartIndex != -1 && nextClusterStartIndex < end)) {
+            int end = findMatchingParenthesis(clusterPart, i);
+            if (end == -1) {
                 throwSyntaxError("closingBracket", lineNumber);
             }
 
@@ -132,9 +133,12 @@ public class SubmissionInputParser {
             i = end + 1;
 
             if (i < clusterPart.length()) {
-                if (clusterPart.charAt(i) != ',') {
+                if (clusterPart.charAt(i) == ')') {
+                    throwSyntaxError("openingBracket", lineNumber);
+                } else if (clusterPart.charAt(i) != ',') {
                     throwSyntaxError("comma", lineNumber);
                 }
+
                 i++;
             }
         }
@@ -158,6 +162,51 @@ public class SubmissionInputParser {
     }
 
     /**
+     * Helper method to check whether an input contains invalid brackets.
+     *
+     * @param input The input.
+     */
+    private void validateBrackets(String input) {
+        for (char c : input.toCharArray()) {
+            if (c == '[' || c == ']' || c == '{' || c == '}') {
+                throwSyntaxError("invalidBracket", c, lineNumber);
+            }
+        }
+    }
+
+    /**
+     * Helper method that finds the matching outer parenthesis of a cluster
+     * when the data points inside the cluster are nested tuples (e.g. in format
+     * ((1,2), (3,4)) instead of (1,2,3,4)).
+     * <p>
+     * Returns the index of the closing parenthesis that matches the opening
+     * parenthesis at the given start index. Consequently, any missing brackets in
+     * the input can be detected through this function as well.
+     *
+     * @param input The input.
+     * @param start The index of the opening parenthesis to match.
+     * @return The index of the matching closing parenthesis.
+     */
+    private int findMatchingParenthesis(String input, int start) {
+        int depth = 0;
+
+        for (int i = start; i < input.length(); i++) {
+            char c = input.charAt(i);
+
+            if (c == '(') {
+                depth++;
+            } else if (c == ')') {
+                depth--;
+                if (depth == 0) {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    /**
      * Helper method to parse the points inside a cluster.
      * <p>
      * Splits the input cluster by commas to get the data points.
@@ -172,6 +221,8 @@ public class SubmissionInputParser {
         if (input.isEmpty()) {
             throwSyntaxError("emptyCluster", lineNumber);
         }
+
+        input = input.replaceAll("[()]", "");
 
         String[] parts = input.split(",");
 
