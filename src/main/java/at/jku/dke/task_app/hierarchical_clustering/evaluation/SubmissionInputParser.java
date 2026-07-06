@@ -134,7 +134,7 @@ public class SubmissionInputParser {
 
             if (i < clusterPart.length()) {
                 if (clusterPart.charAt(i) == ')') {
-                    throwSyntaxError("openingBracket", lineNumber);
+                    throwSyntaxError("superfluousBracket", clusterPart.charAt(i), lineNumber);
                 } else if (clusterPart.charAt(i) != ',') {
                     throwSyntaxError("comma", lineNumber);
                 }
@@ -195,6 +195,9 @@ public class SubmissionInputParser {
 
             if (c == '(') {
                 depth++;
+                if (depth > 1) {
+                    throwSyntaxError("superfluousBracket", c, lineNumber);
+                }
             } else if (c == ')') {
                 depth--;
                 if (depth == 0) {
@@ -221,8 +224,6 @@ public class SubmissionInputParser {
         if (input.isEmpty()) {
             throwSyntaxError("emptyCluster", lineNumber);
         }
-
-        input = input.replaceAll("[()]", "");
 
         String[] parts = input.split(",");
 

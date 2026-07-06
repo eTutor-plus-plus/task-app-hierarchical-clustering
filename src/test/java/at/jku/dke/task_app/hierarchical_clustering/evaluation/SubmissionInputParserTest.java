@@ -268,9 +268,9 @@ class SubmissionInputParserTest {
         e = assertThrows(IllegalArgumentException.class, () -> parserGerman.parse(missingOpeningBracket));
         assertEquals(getMessage("openingBracket", Locale.GERMAN, 1), e.getMessage());
         e = assertThrows(IllegalArgumentException.class, () -> parserEnglish.parse(missingClosingBracket));
-        assertEquals(getMessage("closingBracket", Locale.ENGLISH, 3), e.getMessage());
+        assertEquals(getMessage("superfluousBracket", Locale.ENGLISH, "(", 3), e.getMessage());
         e = assertThrows(IllegalArgumentException.class, () -> parserGerman.parse(missingClosingBracket));
-        assertEquals(getMessage("closingBracket", Locale.GERMAN, 3), e.getMessage());
+        assertEquals(getMessage("superfluousBracket", Locale.GERMAN, "(", 3), e.getMessage());
 
         e = assertThrows(IllegalArgumentException.class, () -> parserEnglish.parse(misplacedOpeningBracket));
         assertEquals(getMessage("openingBracket", Locale.ENGLISH, 2), e.getMessage());
@@ -323,20 +323,17 @@ class SubmissionInputParserTest {
         // Arrange
         String input = """
             Distance 1.0: (3,4)
-            Distance 2.0: (((((1,2))))), (3,4)
+            Distance 2.0: ((1,2)), (3,4)
             Distance 3.0: (5,6), (1,2), (3,4)
-            Distance 4.0: ((1,2),(3,4)), ((5,6),7)
+            Distance 4.0: ((((1,2))),(3,4)), ((5,6),7)
             Distance 5.0: (((1,2,3,4)),(5,6,7))
         """;
 
-        // Act
-        SubmissionInputParser.MergeEventWrapper result = parserEnglish.parse(input);
-
-        // Assert
-        assertEquals(5, result.mergeEvents().size());
-        assertEquals(BigDecimal.ONE, result.mergeEvents().keySet().stream().findFirst().orElse(BigDecimal.valueOf(-1.0)));
-        assertEquals(BigDecimal.valueOf(3), result.mergeEvents().keySet().stream().toList().get(2));
-        assertEquals("(5,6,7)", result.mergeEvents().get(BigDecimal.valueOf(4)).newMerges().get(1).getResult().getFullLabel());
+        // Act & Assert
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> parserEnglish.parse(input));
+        assertEquals(getMessage("superfluousBracket", Locale.ENGLISH, "(", 2), e.getMessage());
+        e = assertThrows(IllegalArgumentException.class, () -> parserGerman.parse(input));
+        assertEquals(getMessage("superfluousBracket", Locale.GERMAN, "(", 2), e.getMessage());
     }
 
     @Test
@@ -367,7 +364,7 @@ class SubmissionInputParserTest {
     }
 
     @Test
-    void testInvalidNesting() {
+    void testInvalidNestingAndInvalidBrackets() {
         // Arrange
         String input1 = """
             Distance 1.0: (3,4)
@@ -407,24 +404,24 @@ class SubmissionInputParserTest {
 
         // Act & Assert
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> parserEnglish.parse(input1));
-        assertEquals(getMessage("openingBracket", Locale.ENGLISH, 3), e.getMessage());
+        assertEquals(getMessage("superfluousBracket", Locale.ENGLISH, ")", 3), e.getMessage());
         e = assertThrows(IllegalArgumentException.class, () -> parserGerman.parse(input1));
-        assertEquals(getMessage("openingBracket", Locale.GERMAN, 3), e.getMessage());
+        assertEquals(getMessage("superfluousBracket", Locale.GERMAN, ")", 3), e.getMessage());
 
         e = assertThrows(IllegalArgumentException.class, () -> parserEnglish.parse(input2));
-        assertEquals(getMessage("openingBracket", Locale.ENGLISH, 3), e.getMessage());
+        assertEquals(getMessage("superfluousBracket", Locale.ENGLISH, "(", 3), e.getMessage());
         e = assertThrows(IllegalArgumentException.class, () -> parserGerman.parse(input2));
-        assertEquals(getMessage("openingBracket", Locale.GERMAN, 3), e.getMessage());
+        assertEquals(getMessage("superfluousBracket", Locale.GERMAN, "(", 3), e.getMessage());
 
         e = assertThrows(IllegalArgumentException.class, () -> parserEnglish.parse(input3));
-        assertEquals(getMessage("closingBracket", Locale.ENGLISH, 3), e.getMessage());
+        assertEquals(getMessage("superfluousBracket", Locale.ENGLISH, "(", 3), e.getMessage());
         e = assertThrows(IllegalArgumentException.class, () -> parserGerman.parse(input3));
-        assertEquals(getMessage("closingBracket", Locale.GERMAN, 3), e.getMessage());
+        assertEquals(getMessage("superfluousBracket", Locale.GERMAN, "(", 3), e.getMessage());
 
         e = assertThrows(IllegalArgumentException.class, () -> parserEnglish.parse(input4));
-        assertEquals(getMessage("closingBracket", Locale.ENGLISH, 3), e.getMessage());
+        assertEquals(getMessage("superfluousBracket", Locale.ENGLISH, "(", 3), e.getMessage());
         e = assertThrows(IllegalArgumentException.class, () -> parserGerman.parse(input4));
-        assertEquals(getMessage("closingBracket", Locale.GERMAN, 3), e.getMessage());
+        assertEquals(getMessage("superfluousBracket", Locale.GERMAN, "(", 3), e.getMessage());
 
         e = assertThrows(IllegalArgumentException.class, () -> parserEnglish.parse(input5));
         assertEquals(getMessage("invalidBracket", Locale.ENGLISH, "}", 3), e.getMessage());
